@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Woods Landing Time Clock</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rye&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Lato', sans-serif; }
+
+        body {
+            background-color: #1c1208;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 820px;
+            background: #2a1f0e;
+            border-radius: 4px;
+            padding: 30px;
+            box-shadow: 0 0 0 3px #6b4c1e, 0 0 0 6px #3d2a0a, 0 20px 60px rgba(0,0,0,0.7);
+            position: relative;
+            border-top: 4px solid #8b5e1a;
+        }
+
+        /* Secret Admin Button */
+        .secret-admin-btn {
+            position: absolute; top: 10px; right: 10px;
+            width: 30px; height: 30px;
+            background: transparent; border: none;
+            font-size: 14px; color: #6b4c1e;
+            cursor: pointer; opacity: 0.3;
+            transition: opacity 0.3s; z-index: 10;
+        }
+        .secret-admin-btn:hover { opacity: 1; }
+
+        /* Header */
+        .header { text-align: center; margin-bottom: 28px; }
+        .header h1 {
+            font-family: 'Rye', serif;
+            color: #d4a847; font-size: 30px;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 6px rgba(0,0,0,0.6);
+            line-height: 1.2;
+        }
+        .header p { color: #9c7a3c; font-size: 14px; margin-top: 6px; letter-spacing: 3px; text-transform: uppercase; }
+        .divider { color: #6b4c1e; font-size: 18px; margin: 6px 0; letter-spacing: 8px; }
+
+        /* PIN Display — 4 dots */
+        .pin-display {
+            background: #1a1208;
+            border: 2px solid #6b4c1e;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 24px;
+            min-height: 76px;
+        }
+        .pin-dot {
+            width: 22px; height: 22px;
+            border-radius: 50%;
+            border: 2px solid #6b4c1e;
+            background: transparent;
+            transition: background 0.12s, border-color 0.12s, box-shadow 0.12s;
+        }
+        .pin-dot.filled {
+            background: #d4a847;
+            border-color: #d4a847;
+            box-shadow: 0 0 10px rgba(212,168,71,0.55);
+        }
+
+        /* Keypad */
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .key {
+            background: #3d2a0a;
+            border: 2px solid #6b4c1e;
+            border-radius: 12px;
+            padding: 22px 0;
+            font-size: 28px;
+            font-weight: bold;
+            color: #d4a847;
+            cursor: pointer;
+            transition: all 0.12s;
+            text-align: center;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        .key:active { background: #6b4c1e; transform: scale(0.94); border-color: #d4a847; }
+        .key.clear { background: #3d1a0a; color: #e07050; border-color: #7a3020; font-size: 22px; }
+        .key.clear:active { background: #7a3020; }
+        .key.enter { background: #1a3d10; color: #6dbf5a; border-color: #2d6b20; font-size: 20px; }
+        .key.enter:active { background: #2d6b20; }
+
+        /* Message */
+        .message { padding: 14px; border-radius: 8px; margin-bottom: 16px; text-align: center; font-weight: bold; animation: slideDown 0.25s ease; }
+        @keyframes slideDown { from { transform: translateY(-10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .message.success { background: #1a3d10; color: #6dbf5a; border-left: 4px solid #6dbf5a; }
+        .message.error { background: #3d1a0a; color: #e07050; border-left: 4px solid #e07050; }
+        .hidden { display: none !important; }
+
+        /* Employee Info Bar */
+        .employee-info {
+            background: linear-gradient(135deg, #3d2a0a 0%, #2a1f0e 100%);
+            border: 2px solid #6b4c1e;
+            color: #d4a847;
+            padding: 18px 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .employee-info h2 { font-family: 'Rye', serif; font-size: 24px; letter-spacing: 1px; }
+        .employee-info p { font-size: 14px; color: #9c7a3c; margin-top: 4px; }
+
+        /* Tabs */
+        .tabs { display: flex; margin-bottom: 20px; background: #1a1208; border-radius: 8px; padding: 4px; border: 1px solid #3d2a0a; }
+        .tab { flex: 1; text-align: center; padding: 13px; font-size: 16px; font-weight: 700; color: #6b4c1e; cursor: pointer; border-radius: 6px; transition: all 0.2s; letter-spacing: 0.5px; }
+        .tab.active { background: #3d2a0a; color: #d4a847; border: 1px solid #6b4c1e; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Clock Buttons — just 2, big */
+        .button-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+        .action-btn {
+            padding: 34px 0; border: none; border-radius: 12px;
+            font-size: 22px; font-weight: bold; color: white;
+            cursor: pointer; transition: transform 0.12s, opacity 0.12s;
+            -webkit-tap-highlight-color: transparent; letter-spacing: 0.5px;
+        }
+        .action-btn:active { transform: scale(0.95); opacity: 0.85; }
+        .btn-in  { background: linear-gradient(135deg, #2d6b20, #1a3d10); border: 2px solid #4a9a38; }
+        .btn-out { background: linear-gradient(135deg, #7a3020, #3d1a0a); border: 2px solid #b04a30; }
+
+        /* Status */
+        .status-card { background: #1a1208; border-radius: 10px; padding: 16px 20px; margin-top: 4px; border-left: 4px solid #6b4c1e; }
+        .status-title { font-size: 12px; color: #6b4c1e; text-transform: uppercase; letter-spacing: 1.5px; }
+        .status-value { font-size: 22px; font-weight: bold; color: #d4a847; margin-top: 4px; }
+        #lastPunch { margin-top: 6px; color: #6b4c1e; font-size: 13px; }
+
+        /* Tips */
+        .tips-card { background: linear-gradient(135deg, #3d2010, #2a1208); border: 2px solid #8b5e1a; border-radius: 12px; padding: 24px; color: #d4a847; margin-bottom: 20px; }
+        .tips-title { font-family: 'Rye', serif; font-size: 20px; text-align: center; margin-bottom: 20px; }
+        .tips-input-group { margin-bottom: 16px; }
+        .tips-label { display: block; font-size: 14px; margin-bottom: 6px; color: #9c7a3c; font-weight: 700; letter-spacing: 0.5px; }
+        .tips-input { width: 100%; padding: 16px; font-size: 22px; border: 2px solid #6b4c1e; border-radius: 8px; text-align: center; font-weight: bold; background: #1a1208; color: #d4a847; }
+        .tips-input:focus { outline: none; border-color: #d4a847; }
+        .btn-tips { background: #3d2a0a; color: #d4a847; border: 2px solid #8b5e1a; padding: 18px; font-size: 20px; font-weight: bold; border-radius: 10px; width: 100%; cursor: pointer; transition: all 0.2s; font-family: 'Rye', serif; letter-spacing: 1px; }
+        .btn-tips:active { background: #6b4c1e; transform: scale(0.98); }
+        .tips-total { font-size: 20px; font-weight: bold; text-align: center; margin-top: 14px; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 8px; color: #d4a847; }
+
+        /* Logout */
+        .logout-btn { background: transparent; border: 2px solid #3d2a0a; color: #6b4c1e; padding: 14px; border-radius: 8px; width: 100%; font-size: 16px; margin-top: 20px; cursor: pointer; transition: all 0.2s; letter-spacing: 1px; }
+        .logout-btn:hover { border-color: #6b4c1e; color: #9c7a3c; }
+
+        /* Admin */
+        .admin-section { display: none; }
+        .admin-section.visible { display: block; }
+        .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; padding-bottom: 16px; border-bottom: 2px solid #3d2a0a; }
+        .admin-header h2 { font-family: 'Rye', serif; color: #d4a847; font-size: 22px; }
+        .admin-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+        .admin-btn { padding: 10px 14px; border: none; border-radius: 7px; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s; letter-spacing: 0.3px; }
+        .admin-btn-primary { background: #2d5a8e; color: white; }
+        .admin-btn-success { background: #2d6b20; color: white; }
+        .admin-btn-warning { background: #8b5e1a; color: #d4a847; }
+        .admin-btn-print { background: #4a3a2a; color: #d4a847; border: 1px solid #6b4c1e; }
+
+        .date-picker { display: flex; gap: 14px; align-items: flex-end; margin-bottom: 20px; background: #1a1208; padding: 14px; border-radius: 8px; flex-wrap: wrap; border: 1px solid #3d2a0a; }
+        .date-picker label { color: #9c7a3c; font-size: 12px; display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 1px; }
+        .date-picker input { padding: 8px 10px; border: 1px solid #6b4c1e; border-radius: 6px; background: #2a1f0e; color: #d4a847; font-size: 14px; }
+
+        .employee-summary { background: #1a1208; border-radius: 10px; padding: 16px; margin-bottom: 14px; border-left: 4px solid #8b5e1a; }
+        .employee-name { font-size: 18px; font-weight: bold; color: #d4a847; margin-bottom: 10px; font-family: 'Rye', serif; }
+        .hours-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 8px; }
+        .hours-box { background: #2a1f0e; padding: 10px; border-radius: 6px; text-align: center; border: 1px solid #3d2a0a; }
+        .hours-label { font-size: 11px; color: #6b4c1e; text-transform: uppercase; letter-spacing: 1px; }
+        .hours-value { font-size: 18px; font-weight: bold; color: #d4a847; margin-top: 2px; }
+        .tips-summary { background: #2a1f0e; color: #9c7a3c; padding: 8px 10px; border-radius: 6px; margin-top: 8px; font-size: 13px; border: 1px solid #3d2a0a; }
+
+        .grand-total { background: linear-gradient(135deg, #3d2a0a, #2a1f0e); border: 2px solid #8b5e1a; color: #d4a847; padding: 20px; border-radius: 10px; margin-top: 20px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center; }
+        .grand-total .val { font-size: 26px; font-weight: bold; font-family: 'Rye', serif; }
+        .grand-total .lbl { font-size: 11px; color: #9c7a3c; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+
+        .back-to-clock { text-align: center; margin-top: 20px; }
+        .back-to-clock button { background: none; border: none; color: #6b4c1e; font-size: 15px; cursor: pointer; text-decoration: underline; }
+
+        /* Modal */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-overlay.open { display: flex; }
+        .modal-box { background: #2a1f0e; border: 2px solid #8b5e1a; padding: 28px; border-radius: 12px; width: 90%; max-width: 400px; }
+        .modal-box h2 { font-family: 'Rye', serif; color: #d4a847; margin-bottom: 20px; }
+        .modal-box label { display: block; margin-bottom: 4px; font-size: 12px; color: #9c7a3c; text-transform: uppercase; letter-spacing: 1px; }
+        .modal-box input { width: 100%; padding: 10px; margin-bottom: 14px; border: 1px solid #6b4c1e; border-radius: 6px; background: #1a1208; color: #d4a847; font-size: 16px; }
+        .modal-box input:focus { outline: none; border-color: #d4a847; }
+        .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 4px; }
+        .modal-cancel { padding: 10px 20px; border: 1px solid #3d2a0a; border-radius: 6px; background: #1a1208; color: #6b4c1e; cursor: pointer; }
+        .modal-save { padding: 10px 20px; border: none; border-radius: 6px; background: #8b5e1a; color: #d4a847; cursor: pointer; font-weight: bold; }
+
+        /* PIN helper */
+        .pin-helper { background: #1a1208; border: 1px solid #3d2a0a; padding: 14px; border-radius: 8px; margin-top: 16px; font-size: 13px; }
+        .pin-helper strong { color: #9c7a3c; }
+        .pin-helper table { width: 100%; margin-top: 8px; }
+        .pin-helper td { padding: 4px 6px; color: #6b4c1e; }
+
+        @media (max-width: 400px) {
+            .key { padding: 18px 0; font-size: 24px; }
+            .action-btn { padding: 26px 0; font-size: 18px; }
+            .grand-total { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <button class="secret-admin-btn" onclick="showAdminLogin()" title="Admin">🦌</button>
+
+    <div id="message" class="message hidden"></div>
+
+    <!-- PIN Section -->
+    <div id="pinSection">
+        <div class="header">
+            <h1>🌲 Woods Landing 🌲</h1>
+            <div class="divider">—⸻—</div>
+            <p>Time Clock</p>
+        </div>
+
+        <div class="pin-display">
+            <div class="pin-dot" id="dot-0"></div>
+            <div class="pin-dot" id="dot-1"></div>
+            <div class="pin-dot" id="dot-2"></div>
+            <div class="pin-dot" id="dot-3"></div>
+        </div>
+
+        <div class="keypad">
+            <div class="key" onclick="addPin(1)">1</div>
+            <div class="key" onclick="addPin(2)">2</div>
+            <div class="key" onclick="addPin(3)">3</div>
+            <div class="key" onclick="addPin(4)">4</div>
+            <div class="key" onclick="addPin(5)">5</div>
+            <div class="key" onclick="addPin(6)">6</div>
+            <div class="key" onclick="addPin(7)">7</div>
+            <div class="key" onclick="addPin(8)">8</div>
+            <div class="key" onclick="addPin(9)">9</div>
+            <div class="key clear" onclick="clearPin()">⌫</div>
+            <div class="key" onclick="addPin(0)">0</div>
+            <div class="key enter" onclick="login()">✓</div>
+        </div>
+
+        <div class="pin-helper">
+            <strong>Employee PINs:</strong>
+            <table>
+                <tr><td>Marline (1111)</td><td>Aaron (2222)</td></tr>
+                <tr><td>Christopher (3333)</td><td>Gigi (4444)</td></tr>
+                <tr><td>Natalie (5555)</td><td>Kara (6666)</td></tr>
+                <tr><td>Sarah (7777)</td><td>Nathan (8888)</td></tr>
+                <tr><td colspan="2">Manager (1234) — Admin Access</td></tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- Clock Section -->
+    <div id="clockSection" class="hidden">
+        <div class="employee-info">
+            <h2 id="employeeName"></h2>
+            <p id="employeeRoleDisplay"></p>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('time')" id="tab-time">⏰ Time</div>
+            <div class="tab" onclick="switchTab('tips')" id="tab-tips">💰 Tips</div>
+        </div>
+
+        <div id="timeTab" class="tab-content active">
+            <div class="button-grid">
+                <button class="action-btn btn-in"  onclick="sendPunch('in')">▶️ Clock In</button>
+                <button class="action-btn btn-out" onclick="sendPunch('out')">⏹️ Clock Out</button>
+            </div>
+            <div class="status-card">
+                <div class="status-title">Current Status</div>
+                <div id="currentStatus" class="status-value">Not clocked in</div>
+                <div id="lastPunch"></div>
+            </div>
+        </div>
+
+        <div id="tipsTab" class="tab-content">
+            <div class="tips-card">
+                <div class="tips-title">💰 Report Your Tips</div>
+                <div class="tips-input-group">
+                    <label class="tips-label">Cash Tips ($)</label>
+                    <input type="number" id="cashTips" class="tips-input" placeholder="0.00" step="0.01" min="0">
+                </div>
+                <div class="tips-input-group">
+                    <label class="tips-label">Credit Card Tips ($)</label>
+                    <input type="number" id="creditTips" class="tips-input" placeholder="0.00" step="0.01" min="0">
+                </div>
+                <button class="btn-tips" onclick="reportTips()">Save Tips</button>
+                <div class="tips-total" id="tipsTotal">Today's Tips: $0.00</div>
+            </div>
+        </div>
+
+        <button class="logout-btn" onclick="logout()">🚪 Log Out</button>
+    </div>
+
+    <!-- Admin Section -->
+    <div id="adminSection" class="admin-section">
+        <div class="admin-header">
+            <h2>🦌 Manager Dashboard</h2>
+            <div class="admin-btns">
+                <button class="admin-btn admin-btn-primary" onclick="showAddEmployeeModal()">➕ Add Employee</button>
+                <button class="admin-btn admin-btn-success" onclick="emailReport()">📧 Email Report</button>
+                <button class="admin-btn admin-btn-print" onclick="printReport()">🖨️ Print / PDF</button>
+                <button class="admin-btn admin-btn-warning" onclick="setThisWeek()">This Week</button>
+            </div>
+        </div>
+
+        <div class="date-picker">
+            <div><label>From</label><input type="date" id="startDate" onchange="loadAdminReport()"></div>
+            <div><label>To</label><input type="date" id="endDate" onchange="loadAdminReport()"></div>
+        </div>
+
+        <div id="adminReportContent">
+            <p style="color:#6b4c1e;text-align:center;padding:20px;">Select a date range above.</p>
+        </div>
+
+        <div class="back-to-clock">
+            <button onclick="backToClock()">← Back to Clock</button>
+        </div>
+    </div>
+
+</div>
+
+<!-- Add Employee Modal -->
+<div id="employeeModal" class="modal-overlay">
+    <div class="modal-box">
+        <h2>Add Employee</h2>
+        <label>Full Name</label>
+        <input type="text" id="empName" placeholder="e.g. Jane">
+        <label>4-Digit PIN</label>
+        <input type="text" id="empPin" maxlength="4" placeholder="e.g. 9999">
+        <label>Hourly Rate ($)</label>
+        <input type="number" id="empRate" step="0.25" placeholder="e.g. 15.00">
+        <div class="modal-actions">
+            <button class="modal-cancel" onclick="hideAddEmployeeModal()">Cancel</button>
+            <button class="modal-save" onclick="addEmployee()">Add</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentPin = '';
+    let employeeId = null, employeeName = '', employeeRole = '';
+    let refreshInterval;
+
+    // ── PIN PAD ──
+    function addPin(num) {
+        if (currentPin.length >= 4) return;
+        currentPin += num;
+        updatePinDots();
+        if (currentPin.length === 4) setTimeout(login, 200);
+    }
+
+    function clearPin() {
+        currentPin = currentPin.slice(0, -1);
+        updatePinDots();
+    }
+
+    function updatePinDots() {
+        for (let i = 0; i < 4; i++) {
+            document.getElementById('dot-' + i).classList.toggle('filled', i < currentPin.length);
+        }
+    }
+
+    async function login() {
+        if (currentPin.length !== 4) { showMessage('Enter your 4-digit PIN', 'error'); return; }
+        try {
+            const res = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ pin: currentPin })
+            });
+            const data = await res.json();
+            currentPin = ''; updatePinDots();
+
+            if (data.success) {
+                employeeId = data.employee.id;
+                employeeName = data.employee.name;
+                employeeRole = data.employee.role;
+
+                if (employeeRole === 'admin') {
+                    document.getElementById('pinSection').classList.add('hidden');
+                    showAdminDashboard();
+                } else {
+                    document.getElementById('employeeName').textContent = employeeName;
+                    document.getElementById('employeeRoleDisplay').textContent = '👤 Employee';
+                    document.getElementById('pinSection').classList.add('hidden');
+                    document.getElementById('clockSection').classList.remove('hidden');
+                    showMessage(`Welcome, ${employeeName}! 🌲`, 'success');
+                    getStatus(); getTodayTips();
+                    refreshInterval = setInterval(getStatus, 30000);
+                }
+            } else {
+                showMessage('Invalid PIN — try again', 'error');
+            }
+        } catch (e) { showMessage('Connection error', 'error'); }
+    }
+
+    // ── EMPLOYEE ──
+    function switchTab(tab) {
+        ['time','tips'].forEach(t => {
+            document.getElementById('tab-' + t).classList.toggle('active', t === tab);
+            document.getElementById(t + 'Tab').classList.toggle('active', t === tab);
+        });
+        if (tab === 'tips') getTodayTips();
+    }
+
+    async function getStatus() {
+        try {
+            const data = await (await fetch('/api/status')).json();
+            if (!data.success) return;
+            const statusEl = document.getElementById('currentStatus');
+            const type = data.lastPunch ? data.lastPunch.punch_type : 'out';
+            if (!data.lastPunch || type === 'out') {
+                statusEl.textContent = '⏹️ Clocked Out'; statusEl.style.color = '#e07050';
+            } else {
+                statusEl.textContent = '✅ Clocked In'; statusEl.style.color = '#6dbf5a';
+            }
+            if (data.lastPunch) {
+                const t = new Date(data.lastPunch.timestamp).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+                document.getElementById('lastPunch').textContent = `Last: ${type.replace('_',' ')} at ${t}`;
+            }
+        } catch (e) {}
+    }
+
+    async function getTodayTips() {
+        try {
+            const data = await (await fetch('/api/tips/today')).json();
+            if (data.success && data.tip) {
+                document.getElementById('cashTips').value = data.tip.cash_tips || '';
+                document.getElementById('creditTips').value = data.tip.credit_tips || '';
+                document.getElementById('tipsTotal').textContent = `Today's Tips: $${(data.tip.total_tips||0).toFixed(2)}`;
+            }
+        } catch (e) {}
+    }
+
+    async function sendPunch(type) {
+        try {
+            const data = await (await fetch('/api/clock', {
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({ type })
+            })).json();
+            if (data.success) {
+                showMessage(type === 'in' ? '✅ Clocked in! Have a great shift! 🌲' : '👋 Clocked out! See ya!', 'success');
+                getStatus();
+            } else showMessage(data.message || 'Error', 'error');
+        } catch (e) { showMessage('Connection error', 'error'); }
+    }
+
+    async function reportTips() {
+        const cash = parseFloat(document.getElementById('cashTips').value) || 0;
+        const credit = parseFloat(document.getElementById('creditTips').value) || 0;
+        try {
+            const data = await (await fetch('/api/tips/report', {
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({ cash_tips: cash, credit_tips: credit })
+            })).json();
+            if (data.success) {
+                showMessage(`Tips saved! $${(cash+credit).toFixed(2)} total 💰`, 'success');
+                document.getElementById('tipsTotal').textContent = `Today's Tips: $${(cash+credit).toFixed(2)}`;
+            }
+        } catch (e) { showMessage('Error saving tips', 'error'); }
+    }
+
+    function logout() {
+        clearInterval(refreshInterval);
+        fetch('/api/logout', { method: 'POST' });
+        document.getElementById('clockSection').classList.add('hidden');
+        document.getElementById('adminSection').classList.remove('visible');
+        document.getElementById('pinSection').classList.remove('hidden');
+        currentPin = ''; updatePinDots();
+        employeeId = null; employeeName = ''; employeeRole = '';
+    }
+
+    // ── ADMIN ──
+    function showAdminLogin() {
+        document.getElementById('pinSection').classList.remove('hidden');
+        document.getElementById('clockSection').classList.add('hidden');
+        document.getElementById('adminSection').classList.remove('visible');
+        showMessage('Enter Manager PIN (1234) to access dashboard', 'success');
+    }
+
+    function showAdminDashboard() {
+        document.getElementById('adminSection').classList.add('visible');
+        const today = new Date().toISOString().split('T')[0];
+        const weekAgo = new Date(Date.now() - 7*86400000).toISOString().split('T')[0];
+        document.getElementById('startDate').value = weekAgo;
+        document.getElementById('endDate').value = today;
+        loadAdminReport();
+    }
+
+    function backToClock() {
+        document.getElementById('adminSection').classList.remove('visible');
+        document.getElementById('pinSection').classList.remove('hidden');
+        currentPin = ''; updatePinDots();
+        employeeId = null; employeeName = ''; employeeRole = '';
+    }
+
+    function setThisWeek() {
+        const today = new Date();
+        const sun = new Date(today); sun.setDate(today.getDate() - today.getDay());
+        document.getElementById('startDate').value = sun.toISOString().split('T')[0];
+        document.getElementById('endDate').value = today.toISOString().split('T')[0];
+        loadAdminReport();
+    }
+
+    async function loadAdminReport() {
+        const start = document.getElementById('startDate').value;
+        const end = document.getElementById('endDate').value;
+        if (!start || !end) return;
+        document.getElementById('adminReportContent').innerHTML = '<p style="color:#9c7a3c;text-align:center;padding:20px;">Loading...</p>';
+        try {
+            const [pr, tr] = await Promise.all([
+                fetch(`/api/report/punches?start=${start}&end=${end}`),
+                fetch(`/api/report/tips?start=${start}&end=${end}`)
+            ]);
+            renderAdminReport((await pr.json()).punches || [], (await tr.json()).tips || []);
+        } catch (e) {
+            document.getElementById('adminReportContent').innerHTML = '<p style="color:#e07050;text-align:center;">Error loading report</p>';
+        }
+    }
+
+    function calcEmpData(punches, tips) {
+        const emps = {};
+        punches.forEach(p => {
+            if (!emps[p.employee_name]) emps[p.employee_name] = { punches:[], tips:[], hourly_rate: p.hourly_rate };
+            emps[p.employee_name].punches.push(p);
+        });
+        tips.forEach(t => { if (emps[t.employee_name]) emps[t.employee_name].tips.push(t); });
+
+        return Object.entries(emps).sort().map(([name, data]) => {
+            let mins = 0, lastIn = null;
+            data.punches.sort((a,b) => new Date(a.timestamp)-new Date(b.timestamp));
+            data.punches.forEach(p => {
+                if (p.punch_type==='in') lastIn = new Date(p.timestamp);
+                else if (p.punch_type==='out' && lastIn) { mins += (new Date(p.timestamp)-lastIn)/60000; lastIn=null; }
+            });
+            const hours = mins/60, pay = hours*data.hourly_rate;
+            const cash = data.tips.reduce((s,t)=>s+(t.cash_tips||0),0);
+            const credit = data.tips.reduce((s,t)=>s+(t.credit_tips||0),0);
+            return { name, hours, pay, cash, credit, tips: cash+credit, hourly_rate: data.hourly_rate };
+        });
+    }
+
+    function renderAdminReport(punches, tips) {
+        const rows = calcEmpData(punches, tips);
+        if (!rows.length) {
+            document.getElementById('adminReportContent').innerHTML = '<p style="color:#6b4c1e;text-align:center;padding:20px;">No data for this period.</p>';
+            return;
+        }
+        let grandH=0, grandP=0, grandT=0, html='';
+        rows.forEach(e => {
+            grandH+=e.hours; grandP+=e.pay; grandT+=e.tips;
+            html += `<div class="employee-summary">
+                <div class="employee-name">🌲 ${e.name}</div>
+                <div class="hours-grid">
+                    <div class="hours-box"><div class="hours-label">Hours</div><div class="hours-value">${e.hours.toFixed(2)}</div></div>
+                    <div class="hours-box"><div class="hours-label">Gross Pay</div><div class="hours-value">$${e.pay.toFixed(2)}</div></div>
+                    <div class="hours-box"><div class="hours-label">Tips</div><div class="hours-value">$${e.tips.toFixed(2)}</div></div>
+                </div>
+                ${e.tips > 0 ? `<div class="tips-summary">Cash: $${e.cash.toFixed(2)} &nbsp;|&nbsp; Credit: $${e.credit.toFixed(2)}</div>` : ''}
+            </div>`;
+        });
+        html += `<div class="grand-total">
+            <div><div class="val">${grandH.toFixed(2)}</div><div class="lbl">Total Hours</div></div>
+            <div><div class="val">$${grandP.toFixed(2)}</div><div class="lbl">Gross Pay</div></div>
+            <div><div class="val">$${grandT.toFixed(2)}</div><div class="lbl">Total Tips</div></div>
+        </div>`;
+        document.getElementById('adminReportContent').innerHTML = html;
+    }
+
+    async function emailReport() {
+        const start = document.getElementById('startDate').value;
+        const end = document.getElementById('endDate').value;
+        if (!start || !end) { showMessage('Select a date range first', 'error'); return; }
+        if (!confirm(`Email report for ${start} to ${end}?`)) return;
+        showMessage('Sending...', 'success');
+        try {
+            const data = await (await fetch('/api/send-report', {
+                method: 'POST', headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({ startDate: start, endDate: end })
+            })).json();
+            if (data.success && !data.emailFailed) showMessage('✅ Report emailed!', 'success');
+            else if (data.emailFailed) { showMessage('Email not configured — opening printable report', 'success'); setTimeout(() => openPrintWindow(data.report), 400); }
+            else showMessage(data.message || 'Error', 'error');
+        } catch (e) { showMessage('Connection error', 'error'); }
+    }
+
+    async function printReport() {
+        const start = document.getElementById('startDate').value;
+        const end = document.getElementById('endDate').value;
+        if (!start || !end) { showMessage('Select a date range first', 'error'); return; }
+        try {
+            const [pr, tr] = await Promise.all([
+                fetch(`/api/report/punches?start=${start}&end=${end}`),
+                fetch(`/api/report/tips?start=${start}&end=${end}`)
+            ]);
+            const rows = calcEmpData((await pr.json()).punches||[], (await tr.json()).tips||[]);
+            let tableRows='', grandH=0, grandP=0, grandT=0;
+            rows.forEach(e => {
+                grandH+=e.hours; grandP+=e.pay; grandT+=e.tips;
+                tableRows += `<tr><td>${e.name}</td><td>${e.hours.toFixed(2)}</td><td>$${e.hourly_rate.toFixed(2)}</td><td>$${e.pay.toFixed(2)}</td><td>$${e.cash.toFixed(2)}</td><td>$${e.credit.toFixed(2)}</td><td><strong>$${e.tips.toFixed(2)}</strong></td></tr>`;
+            });
+            const win = window.open('', '_blank');
+            win.document.write(`<!DOCTYPE html><html><head><title>Woods Landing Report</title>
+            <style>body{font-family:Georgia,serif;padding:30px;color:#2a1f0e;}h1{color:#8b5e1a;font-size:24px;}.meta{color:#888;font-size:13px;margin:6px 0 24px;}table{width:100%;border-collapse:collapse;}th{background:#3d2a0a;color:#d4a847;padding:10px;text-align:left;font-size:13px;}td{padding:9px 10px;border-bottom:1px solid #e8dcc8;}tr:nth-child(even) td{background:#faf7f2;}.totals{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;background:#3d2a0a;color:#d4a847;padding:20px;border-radius:8px;margin-top:20px;text-align:center;}.totals .v{font-size:26px;font-weight:bold;}.totals .l{font-size:12px;opacity:.75;margin-top:4px;}@media print{button{display:none!important;}}</style>
+            </head><body>
+            <h1>🌲 Woods Landing Time Clock Report</h1>
+            <div class="meta">Period: <strong>${start}</strong> to <strong>${end}</strong> &nbsp;·&nbsp; ${new Date().toLocaleString()}</div>
+            <table><thead><tr><th>Employee</th><th>Hours</th><th>Rate</th><th>Gross Pay</th><th>Cash Tips</th><th>Credit Tips</th><th>Total Tips</th></tr></thead><tbody>${tableRows}</tbody></table>
+            <div class="totals"><div><div class="v">${grandH.toFixed(2)}</div><div class="l">Total Hours</div></div><div><div class="v">$${grandP.toFixed(2)}</div><div class="l">Gross Pay</div></div><div><div class="v">$${grandT.toFixed(2)}</div><div class="l">Total Tips</div></div></div>
+            <br><button onclick="window.print()" style="margin-top:16px;padding:12px 28px;background:#8b5e1a;color:#d4a847;border:none;border-radius:8px;font-size:16px;cursor:pointer;">🖨️ Print / Save as PDF</button>
+            </body></html>`);
+            win.document.close();
+            setTimeout(() => win.print(), 600);
+        } catch (e) { showMessage('Error generating report', 'error'); }
+    }
+
+    function openPrintWindow(text) {
+        const win = window.open('', '_blank');
+        win.document.write('<pre style="font-family:monospace;padding:20px;font-size:14px;">' + text + '</pre>');
+        win.document.title = 'Woods Landing Report';
+        win.print();
+    }
+
+    function showAddEmployeeModal() { document.getElementById('employeeModal').classList.add('open'); }
+    function hideAddEmployeeModal() {
+        document.getElementById('employeeModal').classList.remove('open');
+        ['empName','empPin','empRate'].forEach(id => document.getElementById(id).value='');
+    }
+
+    async function addEmployee() {
+        const name = document.getElementById('empName').value.trim();
+        const pin = document.getElementById('empPin').value.trim();
+        const rate = document.getElementById('empRate').value;
+        if (!name || !pin || pin.length !== 4 || !rate) { showMessage('All fields required — PIN must be 4 digits', 'error'); return; }
+        try {
+            const data = await (await fetch('/api/admin/employees', {
+                method:'POST', headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({ name, pin, hourly_rate: parseFloat(rate) })
+            })).json();
+            if (data.success) { showMessage(`${name} added! ✅`, 'success'); hideAddEmployeeModal(); loadAdminReport(); }
+            else showMessage(data.error || 'Error', 'error');
+        } catch (e) { showMessage('Connection error', 'error'); }
+    }
+
+    function showMessage(text, type) {
+        const msg = document.getElementById('message');
+        msg.textContent = text; msg.className = `message ${type}`;
+        msg.classList.remove('hidden');
+        setTimeout(() => msg.classList.add('hidden'), 3500);
+    }
+
+    // Keyboard support
+    document.addEventListener('keydown', e => {
+        if (!document.getElementById('pinSection').classList.contains('hidden')) {
+            if (e.key >= '0' && e.key <= '9') addPin(parseInt(e.key));
+            else if (e.key === 'Backspace') clearPin();
+            else if (e.key === 'Enter') login();
+        }
+    });
+</script>
+</body>
+</html>
