@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Restaurant Time Clock</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        /* Secret Admin Button (tiny in corner) */
+        .secret-admin-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 30px;
+            height: 30px;
+            background: transparent;
+            border: none;
+            font-size: 12px;
+            color: #ccc;
+            cursor: pointer;
+            opacity: 0.3;
+            transition: opacity 0.3s;
+            z-index: 10;
+        }
+
+        .secret-admin-btn:hover {
+            opacity: 1;
+            color: #667eea;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 32px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 16px;
+        }
+
+        /* PIN Section */
+        .pin-section, .clock-section, .admin-section {
+            transition: all 0.3s ease;
+        }
+
+        .pin-display {
+            background: #f0f0f0;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 32px;
+            letter-spacing: 10px;
+            font-family: monospace;
+            border: 2px solid #ddd;
+        }
+
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .key {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 25px 0;
+            font-size: 32px;
+            font-weight: bold;
+            color: #495057;
+            cursor: pointer;
+            transition: all 0.2s;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .key:active {
+            background: #e9ecef;
+            transform: scale(0.95);
+        }
+
+        .key.clear {
+            background: #ff6b6b;
+            color: white;
+            border-color: #ff8787;
+        }
+
+        .key.enter {
+            background: #51cf66;
+            color: white;
+            border-color: #69db7e;
+        }
+
+        /* Employee Section */
+        .employee-info {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .employee-info h2 {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .employee-info p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            background: #f1f3f5;
+            border-radius: 10px;
+            padding: 5px;
+        }
+
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #495057;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .tab.active {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .action-btn {
+            padding: 25px 0;
+            border: none;
+            border-radius: 15px;
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.2s;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .action-btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn-in {
+            background: linear-gradient(135deg, #51cf66 0%, #37b24d 100%);
+        }
+
+        .btn-out {
+            background: linear-gradient(135deg, #ff6b6b 0%, #f03e3e 100%);
+        }
+
+        .btn-break {
+            background: linear-gradient(135deg, #ffd43b 0%, #f59f00 100%);
+        }
+
+        .btn-break-end {
+            background: linear-gradient(135deg, #20c997 0%, #0ca678 100%);
+        }
+
+        /* Tips Card */
+        .tips-card {
+            background: linear-gradient(135deg, #faa2c1 0%, #e64980 100%);
+            border-radius: 15px;
+            padding: 25px;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .tips-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .tips-input-group {
+            margin-bottom: 20px;
+        }
+
+        .tips-label {
+            display: block;
+            font-size: 18px;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .tips-input {
+            width: 100%;
+            padding: 20px;
+            font-size: 24px;
+            border: none;
+            border-radius: 12px;
+            text-align: center;
+            font-weight: bold;
+            background: rgba(255,255,255,0.9);
+        }
+
+        .btn-tips {
+            background: white;
+            color: #e64980;
+            padding: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            border: none;
+            border-radius: 12px;
+            width: 100%;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-tips:active {
+            transform: scale(0.95);
+        }
+
+        .tips-total {
+            font-size: 28px;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+        }
+
+        .status-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            border-left: 5px solid #667eea;
+        }
+
+        .status-title {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .status-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* Admin Section */
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .admin-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .admin-btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .admin-btn-success {
+            background: #51cf66;
+            color: white;
+        }
+
+        .admin-btn-warning {
+            background: #ffd43b;
+            color: #495057;
+        }
+
+        .date-picker {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 20px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            flex-wrap: wrap;
+        }
+
+        .date-picker input {
+            padding: 8px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+        }
+
+        .employee-summary {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 5px solid #667eea;
+        }
+
+        .employee-name {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .hours-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .hours-box {
+            background: white;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .hours-label {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .hours-value {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .tips-summary {
+            background: linear-gradient(135deg, #faa2c1 0%, #e64980 100%);
+            color: white;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+        }
+
+        .logout-btn {
+            background: #f1f3f5;
+            border: 2px solid #dee2e6;
+            color: #495057;
+            padding: 15px;
+            border-radius: 10px;
+            width: 100%;
+            font-size: 18px;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .message.success {
+            background: #d3f9d8;
+            color: #2b8a3e;
+            border-left: 5px solid #2b8a3e;
+        }
+
+        .message.error {
+            background: #ffe3e3;
+            color: #c92a2a;
+            border-left: 5px solid #c92a2a;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* PIN helper (remove in production) */
+        .pin-helper {
+            background: #f1f3f5;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .pin-helper table {
+            width: 100%;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+
+        .pin-helper td {
+            padding: 5px;
+        }
+
+        .back-to-clock {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .back-to-clock button {
+            background: none;
+            border: none;
+            color: #667eea;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Secret Admin Button (tiny in corner) -->
+        <button class="secret-admin-btn" onclick="showAdminLogin()" title="Admin">👑</button>
+
+        <!-- Message Display -->
+        <div id="message" class="message hidden"></div>
+
+        <!-- PIN Entry Section (Default View) -->
+        <div id="pinSection" class="pin-section">
+            <div class="header">
+                <h1>🍽️ Restaurant Time Clock</h1>
+                <p>Enter your PIN to clock in/out</p>
+            </div>
+
+            <div id="pinDisplay" class="pin-display">••••</div>
+            
+            <div class="keypad">
+                <div class="key" onclick="addPin(1)">1</div>
+                <div class="key" onclick="addPin(2)">2</div>
+                <div class="key" onclick="addPin(3)">3</div>
+                <div class="key" onclick="addPin(4)">4</div>
+                <div class="key" onclick="addPin(5)">5</div>
+                <div class="key" onclick="addPin(6)">6</div>
+                <div class="key" onclick="addPin(7)">7</div>
+                <div class="key" onclick="addPin(8)">8</div>
+                <div class="key" onclick="addPin(9)">9</div>
+                <div class="key clear" onclick="clearPin()">⌫</div>
+                <div class="key" onclick="addPin(0)">0</div>
+                <div class="key enter" onclick="login()">✓</div>
+            </div>
+
+            <!-- PIN Helper -->
+            <div class="pin-helper">
+                <strong>Employee PINs:</strong>
+                <table>
+                    <tr><td>Marline (1111)</td><td>Aaron (2222)</td></tr>
+                    <tr><td>Christopher (3333)</td><td>Gigi (4444)</td></tr>
+                    <tr><td>Natalie (5555)</td><td>Kara (6666)</td></tr>
+                    <tr><td>Sarah (7777)</td><td>Nathan (8888)</td></tr>
+                    <tr><td colspan="2">Manager (1234) - Admin Access</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Employee Clock Section -->
+        <div id="clockSection" class="clock-section hidden">
+            <div class="employee-info">
+                <h2 id="employeeName"></h2>
+                <p id="employeeRole"></p>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('time')" id="tab-time">⏰ Time</div>
+                <div class="tab" onclick="switchTab('tips')" id="tab-tips">💰 Tips</div>
+            </div>
+
+            <!-- Time Tab -->
+            <div id="timeTab" class="tab-content active">
+                <div class="button-grid">
+                    <button class="action-btn btn-in" onclick="clockIn()">▶️ Clock In</button>
+                    <button class="action-btn btn-out" onclick="clockOut()">⏹️ Clock Out</button>
+                    <button class="action-btn btn-break" onclick="breakStart()">☕ Break Start</button>
+                    <button class="action-btn btn-break-end" onclick="breakEnd()">✅ Break End</button>
+                </div>
+
+                <div class="status-card">
+                    <div class="status-title">Current Status</div>
+                    <div id="currentStatus" class="status-value">Not clocked in</div>
+                    <div id="lastPunch" style="margin-top: 10px; color: #666;"></div>
+                </div>
+            </div>
+
+            <!-- Tips Tab -->
+            <div id="tipsTab" class="tab-content">
+                <div class="tips-card">
+                    <div class="tips-title">💰 Report Your Tips</div>
+                    
+                    <div class="tips-input-group">
+                        <label class="tips-label">Cash Tips ($)</label>
+                        <input type="number" id="cashTips" class="tips-input" placeholder="0.00" step="0.01" min="0">
+                    </div>
+
+                    <div class="tips-input-group">
+                        <label class="tips-label">Credit Card Tips ($)</label>
+                        <input type="number" id="creditTips" class="tips-input" placeholder="0.00" step="0.01" min="0">
+                    </div>
+
+                    <button class="btn-tips" onclick="reportTips()">✓ Report Tips</button>
+
+                    <div class="tips-total" id="tipsTotal">
+                        Today's Tips: $0.00
+                    </div>
+                </div>
+            </div>
+
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+
+        <!-- Admin Dashboard Section -->
+        <div id="adminSection" class="admin-section hidden">
+            <div class="admin-header">
+                <h2>👑 Manager Dashboard</h2>
+                <div>
+                    <button class="admin-btn admin-btn-primary" onclick="showAddEmployeeModal()">➕ Add Employee</button>
+                    <button class="admin-btn admin-btn-success" onclick="emailReport()">📧 Email Report</button>
+                </div>
+            </div>
+
+            <!-- Date Range -->
+            <div class="date-picker">
+                <div>From: <input type="date" id="startDate" onchange="loadAdminReport()"></div>
+                <div>To: <input type="date" id="endDate" onchange="loadAdminReport()"></div>
+                <button class="admin-btn admin-btn-warning" onclick="setThisWeek()">This Week</button>
+            </div>
+
+            <!-- Report Content -->
+            <div id="adminReportContent">
+                Loading report...
+            </div>
+
+            <!-- Back to Clock Button -->
+            <div class="back-to-clock">
+                <button onclick="backToClock()">← Back to Clock</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Employee Modal -->
+    <div id="employeeModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000;">
+        <div style="background: white; padding: 30px; border-radius: 12px; width: 90%; max-width: 400px;">
+            <h2 style="margin-bottom: 20px;">Add New Employee</h2>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px;">Name</label>
+                <input type="text" id="empName" style="width: 100%; padding: 10px; border: 2px solid #e9ecef; border-radius: 6px;">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px;">4-Digit PIN</label>
+                <input type="text" id="empPin" maxlength="4" style="width: 100%; padding: 10px; border: 2px solid #e9ecef; border-radius: 6px;">
+            </div>
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 5px;">Hourly Rate ($)</label>
+                <input type="number" id="empRate" step="0.25" style="width: 100%; padding: 10px; border: 2px solid #e9ecef; border-radius: 6px;">
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button onclick="hideAddEmployeeModal()" style="padding: 10px 20px; border: none; border-radius: 6px; background: #f1f3f5; cursor: pointer;">Cancel</button>
+                <button onclick="addEmployee()" style="padding: 10px 20px; border: none; border-radius: 6px; background: #667eea; color: white; cursor: pointer;">Add</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== GLOBAL VARIABLES ====================
+        let currentPin = '';
+        let employeeId = null;
+        let employeeName = '';
+        let employeeRole = '';
+        let refreshInterval;
+        let adminMode = false;
+
+        // ==================== PIN LOGIN FUNCTIONS ====================
+        function addPin(num) {
+            if (currentPin.length < 4) {
+                currentPin += num;
+                updatePinDisplay();
+            }
+        }
+
+        function clearPin() {
+            currentPin = currentPin.slice(0, -1);
+            updatePinDisplay();
+        }
+
+        function updatePinDisplay() {
+            const display = document.getElementById('pinDisplay');
+            display.textContent = '•'.repeat(currentPin.length) + '•'.repeat(4 - currentPin.length);
+        }
+
+        async function login() {
+            if (currentPin.length !== 4) {
+                showMessage('Please enter 4-digit PIN', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pin: currentPin })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    employeeId = data.employee.id;
+                    employeeName = data.employee.name;
+                    employeeRole = data.employee.role;
+                    
+                    document.getElementById('employeeName').textContent = employeeName;
+                    document.getElementById('employeeRole').textContent = 
+                        employeeRole === 'admin' ? '👑 Manager' : '👤 Employee';
+                    
+                    document.getElementById('pinSection').classList.add('hidden');
+                    document.getElementById('clockSection').classList.remove('hidden');
+                    
+                    showMessage(`Welcome, ${employeeName}!`, 'success');
+                    currentPin = '';
+                    updatePinDisplay();
+                    
+                    // Start refreshing
+                    getStatus();
+                    getTodayTips();
+                    refreshInterval = setInterval(() => {
+                        getStatus();
+                        getTodayTips();
+                    }, 30000);
+                } else {
+                    showMessage('Invalid PIN', 'error');
+                    currentPin = '';
+                    updatePinDisplay();
+                }
+            } catch (error) {
+                showMessage('Connection error', 'error');
+            }
+        }
+
+        // ==================== EMPLOYEE FUNCTIONS ====================
+        function switchTab(tab) {
+            document.getElementById('tab-time').classList.remove('active');
+            document.getElementById('tab-tips').classList.remove('active');
+            document.getElementById('timeTab').classList.remove('active');
+            document.getElementById('tipsTab').classList.remove('active');
+            
+            if (tab === 'time') {
+                document.getElementById('tab-time').classList.add('active');
+                document.getElementById('timeTab').classList.add('active');
+            } else {
+                document.getElementById('tab-tips').classList.add('active');
+                document.getElementById('tipsTab').classList.add('active');
+                getTodayTips();
+            }
+        }
+
+        async function getStatus() {
+            try {
+                const response = await fetch('/api/status');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const statusEl = document.getElementById('currentStatus');
+                    const lastPunchEl = document.getElementById('lastPunch');
+                    
+                    statusEl.textContent = data.clockedIn ? '✅ Clocked In' : '⏹️ Clocked Out';
+                    statusEl.style.color = data.clockedIn ? '#2b8a3e' : '#c92a2a';
+                    
+                    if (data.lastPunch) {
+                        const time = new Date(data.lastPunch.timestamp).toLocaleTimeString();
+                        lastPunchEl.textContent = `Last: ${data.lastPunch.punch_type.replace('_', ' ')} at ${time}`;
+                    }
+                }
+            } catch (error) {
+                console.error('Status error:', error);
+            }
+        }
+
+        async function getTodayTips() {
+            try {
+                const response = await fetch('/api/tips/today');
+                const data = await response.json();
+                
+                if (data.success && data.tip) {
+                    document.getElementById('cashTips').value = data.tip.cash_tips || 0;
+                    document.getElementById('creditTips').value = data.tip.credit_tips || 0;
+                    document.getElementById('tipsTotal').innerHTML = 
+                        `Today's Tips: $${(data.tip.total_tips || 0).toFixed(2)}`;
+                }
+            } catch (error) {
+                console.error('Tips error:', error);
+            }
+        }
+
+        async function clockIn() { await sendPunch('in'); }
+        async function clockOut() { await sendPunch('out'); }
+        async function breakStart() { await sendPunch('break_start'); }
+        async function breakEnd() { await sendPunch('break_end'); }
+
+        async function sendPunch(type) {
+            try {
+                const response = await fetch('/api/clock', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    const messages = {
+                        'in': '✅ Clocked in!',
+                        'out': '⏹️ Clocked out!',
+                        'break_start': '☕ Break started',
+                        'break_end': '✅ Break ended'
+                    };
+                    showMessage(messages[type], 'success');
+                    getStatus();
+                }
+            } catch (error) {
+                showMessage('Connection error', 'error');
+            }
+        }
+
+        async function reportTips() {
+            const cashTips = parseFloat(document.getElementById('cashTips').value) || 0;
+            const creditTips = parseFloat(document.getElementById('creditTips').value) || 0;
+
+            try {
+                const response = await fetch('/api/tips/report', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ cash_tips: cashTips, credit_tips: creditTips })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showMessage(data.message, 'success');
+                    document.getElementById('tipsTotal').innerHTML = 
+                        `Today's Tips: $${(cashTips + creditTips).toFixed(2)}`;
+                }
+            } catch (error) {
+                showMessage('Error reporting tips', 'error');
+            }
+        }
+
+        // ==================== ADMIN FUNCTIONS ====================
+        function showAdminLogin() {
+            if (confirm('Enter Admin PIN?')) {
+                // Return to PIN screen but with admin context
+                document.getElementById('pinSection').classList.remove('hidden');
+                document.getElementById('clockSection').classList.add('hidden');
+                document.getElementById('adminSection').classList.add('hidden');
+                showMessage('Enter manager PIN (1234)', 'success');
+            }
+        }
+
+        function showAdminDashboard() {
+            if (employeeRole === 'admin') {
+                document.getElementById('clockSection').classList.add('hidden');
+                document.getElementById('adminSection').classList.remove('hidden');
+                
+                // Set default dates
+                const today = new Date();
+                const sevenDaysAgo = new Date();
+                sevenDaysAgo.setDate(today.getDate() - 7);
+                
+                document.getElementById('startDate').value = sevenDaysAgo.toISOString().split('T')[0];
+                document.getElementById('endDate').value = today.toISOString().split('T')[0];
+                
+                loadAdminReport();
+            }
+        }
+
+        function backToClock() {
+            document.getElementById('adminSection').classList.add('hidden');
+            document.getElementById('clockSection').classList.remove('hidden');
+        }
+
+        function setThisWeek() {
+            const today = new Date();
+            const firstDay = new Date(today);
+            firstDay.setDate(today.getDate() - today.getDay());
+            
+            document.getElementById('startDate').value = firstDay.toISOString().split('T')[0];
+            document.getElementById('endDate').value = today.toISOString().split('T')[0];
+            loadAdminReport();
+        }
+
+        async function loadAdminReport() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            try {
+                const [punchesRes, tipsRes] = await Promise.all([
+                    fetch(`/api/report/punches?start=${startDate}&end=${endDate}`),
+                    fetch(`/api/report/tips?start=${startDate}&end=${endDate}`)
+                ]);
+
+                const punches = await punchesRes.json();
+                const tips = await tipsRes.json();
+
+                renderAdminReport(punches.success ? punches.punches : [], tips.success ? tips.tips : []);
+            } catch (error) {
+                console.error('Error loading report:', error);
+            }
+        }
+
+        function renderAdminReport(punches, tips) {
+            // Group by employee
+            const employees = {};
+            
+            punches.forEach(p => {
+                if (!employees[p.employee_name]) {
+                    employees[p.employee_name] = { punches: [], tips: [], totalHours: 0 };
+                }
+                employees[p.employee_name].punches.push(p);
+            });
+
+            tips.forEach(t => {
+                if (employees[t.employee_name]) {
+                    employees[t.employee_name].tips.push(t);
+                }
+            });
+
+            let html = '';
+            let grandTotalHours = 0;
+            let grandTotalTips = 0;
+
+            Object.entries(employees).forEach(([name, data]) => {
+                // Calculate hours
+                let totalMinutes = 0;
+                let lastIn = null;
+                
+                data.punches.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+                
+                data.punches.forEach(p => {
+                    if (p.punch_type === 'in') {
+                        lastIn = new Date(p.timestamp);
+                    } else if (p.punch_type === 'out' && lastIn) {
+                        totalMinutes += (new Date(p.timestamp) - lastIn) / (1000 * 60);
+                        lastIn = null;
+                    }
+                });
+
+                const hours = (totalMinutes / 60).toFixed(2);
+                grandTotalHours += parseFloat(hours);
+
+                // Calculate tips
+                const cashTips = data.tips.reduce((sum, t) => sum + (t.cash_tips || 0), 0);
+                const creditTips = data.tips.reduce((sum, t) => sum + (t.credit_tips || 0), 0);
+                const totalTips = cashTips + creditTips;
+                grandTotalTips += totalTips;
+
+                html += `
+                    <div class="employee-summary">
+                        <div class="employee-name">👤 ${name}</div>
+                        <div class="hours-grid">
+                            <div class="hours-box">
+                                <div class="hours-label">Hours</div>
+                                <div class="hours-value">${hours}</div>
+                            </div>
+                            <div class="hours-box">
+                                <div class="hours-label">Punches</div>
+                                <div class="hours-value">${data.punches.length}</div>
+                            </div>
+                            <div class="hours-box">
+                                <div class="hours-label">Tips</div>
+                                <div class="hours-value">$${totalTips.toFixed(2)}</div>
+                            </div>
+                        </div>
+                        ${data.tips.length > 0 ? `
+                            <div class="tips-summary">
+                                Cash: $${cashTips.toFixed(2)} | Credit: $${creditTips.toFixed(2)}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+
+            html += `
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; margin-top: 20px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; text-align: center;">
+                        <div>
+                            <div style="font-size: 14px; opacity: 0.9;">Total Hours</div>
+                            <div style="font-size: 32px; font-weight: bold;">${grandTotalHours.toFixed(2)}</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 14px; opacity: 0.9;">Total Tips</div>
+                            <div style="font-size: 32px; font-weight: bold;">$${grandTotalTips.toFixed(2)}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('adminReportContent').innerHTML = html;
+        }
+
+        async function emailReport() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            
+            if (confirm(`Email report for ${startDate} to ${endDate}?`)) {
+                try {
+                    const response = await fetch('/api/send-report', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ startDate, endDate })
+                    });
+                    
+                    const data = await response.json();
+                    showMessage(data.emailFailed ? 'Report ready but email failed' : 'Report sent!', 'success');
+                } catch (error) {
+                    showMessage('Error sending report', 'error');
+                }
+            }
+        }
+
+        function showAddEmployeeModal() {
+            document.getElementById('employeeModal').style.display = 'flex';
+        }
+
+        function hideAddEmployeeModal() {
+            document.getElementById('employeeModal').style.display = 'none';
+            document.getElementById('empName').value = '';
+            document.getElementById('empPin').value = '';
+            document.getElementById('empRate').value = '';
+        }
+
+        async function addEmployee() {
+            const name = document.getElementById('empName').value;
+            const pin = document.getElementById('empPin').value;
+            const rate = document.getElementById('empRate').value;
+
+            if (!name || !pin || pin.length !== 4 || !rate) {
+                alert('Please fill all fields');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/admin/employees', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, pin, hourly_rate: parseFloat(rate) })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert('Employee added!');
+                    hideAddEmployeeModal();
+                    loadAdminReport();
+                }
+            } catch (error) {
+                alert('Error adding employee');
+            }
+        }
+
+        // ==================== GENERAL FUNCTIONS ====================
+        function showMessage(text, type) {
+            const msg = document.getElementById('message');
+            msg.textContent = text;
+            msg.className = `message ${type}`;
+            msg.classList.remove('hidden');
+            setTimeout(() => msg.classList.add('hidden'), 3000);
+        }
+
+        function logout() {
+            clearInterval(refreshInterval);
+            fetch('/api/logout', { method: 'POST' });
+            document.getElementById('clockSection').classList.add('hidden');
+            document.getElementById('adminSection').classList.add('hidden');
+            document.getElementById('pinSection').classList.remove('hidden');
+            currentPin = '';
+            updatePinDisplay();
+        }
+
+        // Check if admin on login
+        const originalLogin = login;
+        login = async function() {
+            await originalLogin();
+            if (employeeRole === 'admin') {
+                setTimeout(() => {
+                    if (confirm('Go to Admin Dashboard?')) {
+                        showAdminDashboard();
+                    }
+                }, 500);
+            }
+        };
+
+        // Keyboard support
+        document.addEventListener('keydown', (e) => {
+            if (!document.getElementById('pinSection').classList.contains('hidden')) {
+                if (e.key >= '0' && e.key <= '9') addPin(parseInt(e.key));
+                else if (e.key === 'Backspace') clearPin();
+                else if (e.key === 'Enter') login();
+            }
+        });
+    </script>
+</body>
+</html>
