@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Woods Landing Time Clock</title>
+<link href="https://fonts.googleapis.com/css2?family=Rye&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Lato',sans-serif;}
+body{background-color:#1c1208;min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding:20px;}
+.wrap{width:100%;max-width:880px;background:#2a1f0e;border-radius:4px;padding:28px;box-shadow:0 0 0 3px #6b4c1e,0 0 0 6px #3d2a0a,0 20px 60px rgba(0,0,0,.7);position:relative;border-top:4px solid #8b5e1a;}
+.secret-btn{position:absolute;top:10px;right:10px;width:28px;height:28px;background:transparent;border:none;font-size:13px;color:#6b4c1e;cursor:pointer;opacity:.3;transition:opacity .3s;}
+.secret-btn:hover{opacity:1;}
+
+/* ── HEADER ── */
+.hdr{text-align:center;margin-bottom:22px;}
+.hdr h1{font-family:'Rye',serif;color:#d4a847;font-size:28px;letter-spacing:2px;text-shadow:2px 2px 5px rgba(0,0,0,.5);}
+.hdr p{color:#9c7a3c;font-size:12px;margin-top:5px;letter-spacing:3px;text-transform:uppercase;}
+.hdr-div{color:#6b4c1e;margin:5px 0;font-size:16px;letter-spacing:6px;}
+
+/* ── PIN ── */
+.pin-display{background:#1a1208;border:2px solid #6b4c1e;border-radius:10px;padding:18px;margin-bottom:16px;display:flex;justify-content:center;align-items:center;gap:22px;min-height:70px;}
+.pin-dot{width:20px;height:20px;border-radius:50%;border:2px solid #6b4c1e;background:transparent;transition:all .12s;}
+.pin-dot.filled{background:#d4a847;border-color:#d4a847;box-shadow:0 0 10px rgba(212,168,71,.5);}
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
+.key{background:#3d2a0a;border:2px solid #6b4c1e;border-radius:11px;padding:19px 0;font-size:26px;font-weight:bold;color:#d4a847;cursor:pointer;text-align:center;transition:all .12s;-webkit-tap-highlight-color:transparent;user-select:none;}
+.key:active{background:#6b4c1e;transform:scale(.94);border-color:#d4a847;}
+.key.clear{background:#3d1a0a;color:#e07050;border-color:#7a3020;font-size:20px;}
+.key.clear:active{background:#7a3020;}
+.key.enter{background:#1a3d10;color:#6dbf5a;border-color:#2d6b20;font-size:18px;}
+.key.enter:active{background:#2d6b20;}
+.pin-helper{background:#1a1208;border:1px solid #3d2a0a;padding:12px;border-radius:8px;margin-top:12px;}
+.pin-helper strong{color:#9c7a3c;font-size:13px;}
+.pin-helper table{width:100%;margin-top:7px;}
+.pin-helper td{padding:3px 6px;color:#6b4c1e;font-size:13px;}
+
+/* ── MESSAGES ── */
+.msg-box{padding:13px;border-radius:8px;margin-bottom:14px;text-align:center;font-weight:bold;animation:slideIn .25s ease;}
+@keyframes slideIn{from{transform:translateY(-8px);opacity:0}to{transform:translateY(0);opacity:1}}
+.msg-success{background:#1a3d10;color:#6dbf5a;border-left:4px solid #6dbf5a;}
+.msg-error{background:#3d1a0a;color:#e07050;border-left:4px solid #e07050;}
+
+/* ── SCREENS — only one visible at a time ── */
+.screen{display:none;}
+.screen.on{display:block;}
+
+/* ── EMPLOYEE CLOCK ── */
+.emp-bar{background:linear-gradient(135deg,#3d2a0a,#2a1f0e);border:2px solid #6b4c1e;color:#d4a847;padding:16px;border-radius:10px;text-align:center;margin-bottom:16px;}
+.emp-bar h2{font-family:'Rye',serif;font-size:21px;}
+.emp-bar p{font-size:12px;color:#9c7a3c;margin-top:3px;}
+.etabs{display:flex;margin-bottom:16px;background:#1a1208;border-radius:8px;padding:4px;border:1px solid #3d2a0a;}
+.etab{flex:1;text-align:center;padding:11px;font-size:14px;font-weight:700;color:#6b4c1e;cursor:pointer;border-radius:6px;transition:all .2s;}
+.etab.on{background:#3d2a0a;color:#d4a847;border:1px solid #6b4c1e;}
+.econtent{display:none;}
+.econtent.on{display:block;}
+.clock-btns{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;}
+.cbtn{padding:30px 0;border:none;border-radius:12px;font-size:21px;font-weight:bold;color:white;cursor:pointer;transition:transform .12s;-webkit-tap-highlight-color:transparent;}
+.cbtn:active{transform:scale(.95);}
+.cbtn-in{background:linear-gradient(135deg,#2d6b20,#1a3d10);border:2px solid #4a9a38;}
+.cbtn-out{background:linear-gradient(135deg,#7a3020,#3d1a0a);border:2px solid #b04a30;}
+.status-box{background:#1a1208;border-radius:10px;padding:14px 17px;border-left:4px solid #6b4c1e;}
+.s-lbl{font-size:10px;color:#6b4c1e;text-transform:uppercase;letter-spacing:1.5px;}
+.s-val{font-size:20px;font-weight:bold;color:#d4a847;margin-top:3px;}
+.s-last{margin-top:4px;color:#6b4c1e;font-size:12px;}
+.tips-box{background:linear-gradient(135deg,#3d2010,#2a1208);border:2px solid #8b5e1a;border-radius:12px;padding:20px;margin-bottom:16px;}
+.tips-ttl{font-family:'Rye',serif;font-size:18px;color:#d4a847;text-align:center;margin-bottom:16px;}
+.tips-lbl{display:block;font-size:12px;margin-bottom:4px;color:#9c7a3c;font-weight:700;letter-spacing:.5px;}
+.tips-inp{width:100%;padding:14px;font-size:22px;border:2px solid #6b4c1e;border-radius:8px;text-align:center;font-weight:bold;background:#1a1208;color:#d4a847;}
+.tips-inp:focus{outline:none;border-color:#d4a847;}
+.tips-save{background:#3d2a0a;color:#d4a847;border:2px solid #8b5e1a;padding:14px;font-size:18px;font-weight:bold;border-radius:10px;width:100%;cursor:pointer;font-family:'Rye',serif;letter-spacing:1px;margin-top:12px;}
+.tips-save:active{background:#6b4c1e;}
+.tips-total{font-size:18px;font-weight:bold;text-align:center;margin-top:11px;padding:10px;background:rgba(0,0,0,.3);border-radius:8px;color:#d4a847;}
+.logout-btn{background:transparent;border:2px solid #3d2a0a;color:#6b4c1e;padding:12px;border-radius:8px;width:100%;font-size:15px;margin-top:16px;cursor:pointer;transition:all .2s;letter-spacing:1px;}
+.logout-btn:hover{border-color:#6b4c1e;color:#9c7a3c;}
+
+/* ── ADMIN NAV TABS ── */
+.admin-nav{display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap;border-bottom:2px solid #3d2a0a;padding-bottom:12px;}
+.anav{padding:9px 16px;background:#1a1208;border:1px solid #3d2a0a;border-radius:7px;color:#6b4c1e;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.anav.on{background:#3d2a0a;color:#d4a847;border-color:#8b5e1a;}
+
+/* ── ADMIN PANELS — only one visible at a time ── */
+.apanel{display:none;}
+.apanel.on{display:block;}
+
+/* ── ADMIN UI COMPONENTS ── */
+.ph{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px;}
+.ph h2{font-family:'Rye',serif;color:#d4a847;font-size:20px;}
+.btnrow{display:flex;gap:7px;flex-wrap:wrap;}
+.ab{padding:8px 13px;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;}
+.ab-blue{background:#2d5a8e;color:white;}
+.ab-green{background:#2d6b20;color:white;}
+.ab-amber{background:#8b5e1a;color:#d4a847;}
+.ab-dark{background:#3d2a0a;color:#d4a847;border:1px solid #6b4c1e;}
+.ab-red{background:#7a2020;color:#ffaaaa;}
+.back-lnk{background:none;border:none;color:#6b4c1e;font-size:13px;cursor:pointer;text-decoration:underline;padding:0;}
+.datebar{display:flex;gap:10px;align-items:flex-end;margin-bottom:16px;background:#1a1208;padding:12px;border-radius:8px;flex-wrap:wrap;border:1px solid #3d2a0a;}
+.datebar label{color:#9c7a3c;font-size:10px;display:block;margin-bottom:3px;text-transform:uppercase;letter-spacing:1px;}
+.datebar input{padding:7px 9px;border:1px solid #6b4c1e;border-radius:6px;background:#2a1f0e;color:#d4a847;font-size:13px;}
+
+/* ── EMPLOYEE CARDS ── */
+.ecard{background:#1a1208;border-radius:10px;padding:14px;margin-bottom:11px;border-left:4px solid #8b5e1a;}
+.ecard-name{font-family:'Rye',serif;font-size:16px;color:#d4a847;margin-bottom:9px;cursor:pointer;display:inline-block;}
+.ecard-name:hover{color:#f0c040;text-decoration:underline;}
+.stats3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:9px;}
+.sbox{background:#2a1f0e;padding:9px;border-radius:6px;text-align:center;border:1px solid #3d2a0a;}
+.slbl{font-size:10px;color:#6b4c1e;text-transform:uppercase;letter-spacing:.8px;}
+.sval{font-size:16px;font-weight:bold;color:#d4a847;margin-top:2px;}
+.card-acts{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px;}
+.grand{background:linear-gradient(135deg,#3d2a0a,#2a1f0e);border:2px solid #8b5e1a;color:#d4a847;padding:16px;border-radius:10px;margin-top:16px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center;}
+.grand .gv{font-size:22px;font-weight:bold;font-family:'Rye',serif;}
+.grand .gl{font-size:10px;color:#9c7a3c;text-transform:uppercase;letter-spacing:1px;margin-top:3px;}
+
+/* ── EMPLOYEE PROFILE ── */
+.prof-banner{background:linear-gradient(135deg,#3d2a0a,#2a1f0e);border:2px solid #6b4c1e;padding:18px;border-radius:10px;margin-bottom:16px;text-align:center;}
+.prof-name{font-family:'Rye',serif;font-size:24px;color:#d4a847;}
+.prof-meta{color:#9c7a3c;font-size:12px;margin-top:4px;}
+.prof-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:16px;}
+.pstat{background:#1a1208;border-radius:8px;padding:13px;text-align:center;border:1px solid #3d2a0a;}
+.pstat .pv{font-size:20px;font-weight:bold;color:#d4a847;font-family:'Rye',serif;}
+.pstat .pl{font-size:10px;color:#6b4c1e;text-transform:uppercase;letter-spacing:1px;margin-top:2px;}
+.sect{background:#1a1208;border-radius:10px;padding:14px;margin-bottom:12px;}
+.sect h3{font-family:'Rye',serif;color:#9c7a3c;font-size:13px;margin-bottom:11px;letter-spacing:1px;}
+.ptable{width:100%;border-collapse:collapse;font-size:12px;}
+.ptable th{color:#9c7a3c;text-align:left;padding:7px 5px;border-bottom:1px solid #3d2a0a;font-size:10px;text-transform:uppercase;letter-spacing:1px;}
+.ptable td{padding:7px 5px;border-bottom:1px solid #1a1208;color:#d4a847;}
+.tin{color:#6dbf5a;}.tout{color:#e07050;}
+
+/* ── TAX PAGE ── */
+.year-row{display:flex;gap:9px;align-items:center;margin-bottom:16px;flex-wrap:wrap;}
+.year-row input{padding:8px 11px;border:1px solid #6b4c1e;border-radius:6px;background:#2a1f0e;color:#d4a847;font-size:15px;width:88px;}
+.year-grand{background:linear-gradient(135deg,#3d2a0a,#2a1f0e);border:2px solid #8b5e1a;border-radius:10px;padding:16px;margin-bottom:16px;display:grid;grid-template-columns:repeat(4,1fr);gap:9px;text-align:center;}
+.year-grand .yv{font-size:19px;font-weight:bold;color:#d4a847;font-family:'Rye',serif;}
+.year-grand .yl{font-size:10px;color:#9c7a3c;text-transform:uppercase;letter-spacing:1px;margin-top:3px;}
+.tax-card{background:#1a1208;border-radius:10px;margin-bottom:12px;overflow:hidden;border:1px solid #3d2a0a;}
+.tax-hdr{padding:14px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:background .2s;flex-wrap:wrap;gap:6px;}
+.tax-hdr:hover{background:#2a1f0e;}
+.tax-empname{font-family:'Rye',serif;color:#d4a847;font-size:15px;}
+.tax-summary{color:#9c7a3c;font-size:12px;display:flex;gap:12px;flex-wrap:wrap;}
+.tax-summary span{color:#d4a847;}
+.tax-months{display:none;padding:0 14px 14px;}
+.tax-months.open{display:block;}
+.mthgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:7px;}
+.mbox{background:#2a1f0e;border-radius:7px;padding:9px;border:1px solid #3d2a0a;}
+.mbox .mn{font-size:10px;color:#9c7a3c;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;}
+.mbox .mv{font-size:13px;font-weight:bold;color:#d4a847;}
+.mbox .ml{font-size:10px;color:#6b4c1e;}
+
+/* ── BACKUP ── */
+.backup-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+.bcard{background:#1a1208;border-radius:10px;padding:16px;border:1px solid #3d2a0a;text-align:center;}
+.bcard h3{font-family:'Rye',serif;color:#9c7a3c;font-size:13px;margin-bottom:10px;}
+.bcard p{color:#6b4c1e;font-size:12px;margin-bottom:12px;line-height:1.5;}
+.bcard-big{background:#1a1208;border-radius:10px;padding:16px;border:1px solid #3d2a0a;margin-bottom:12px;}
+.bcard-big h3{font-family:'Rye',serif;color:#9c7a3c;font-size:14px;margin-bottom:8px;}
+.bcard-big p{color:#6b4c1e;font-size:12px;line-height:1.6;}
+.bcard-big ul{color:#9c7a3c;font-size:12px;padding-left:18px;line-height:2;}
+.bcard-big li span{color:#d4a847;}
+#backupLog{background:#1a1208;border-radius:8px;padding:12px;font-size:12px;color:#9c7a3c;max-height:200px;overflow-y:auto;border:1px solid #3d2a0a;}
+
+/* ── MODALS ── */
+.modal-bg{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.82);justify-content:center;align-items:center;z-index:1000;}
+.modal-bg.open{display:flex;}
+.modal{background:#2a1f0e;border:2px solid #8b5e1a;padding:24px;border-radius:12px;width:90%;max-width:420px;max-height:90vh;overflow-y:auto;}
+.modal h2{font-family:'Rye',serif;color:#d4a847;margin-bottom:16px;}
+.modal label{display:block;margin-bottom:3px;font-size:11px;color:#9c7a3c;text-transform:uppercase;letter-spacing:1px;}
+.modal input,.modal select{width:100%;padding:9px;margin-bottom:12px;border:1px solid #6b4c1e;border-radius:6px;background:#1a1208;color:#d4a847;font-size:14px;}
+.modal input:focus,.modal select:focus{outline:none;border-color:#d4a847;}
+.modal select option{background:#2a1f0e;}
+.mact{display:flex;gap:9px;justify-content:flex-end;margin-top:4px;}
+.mcancel{padding:9px 17px;border:1px solid #3d2a0a;border-radius:6px;background:#1a1208;color:#6b4c1e;cursor:pointer;}
+.msave{padding:9px 17px;border:none;border-radius:6px;background:#8b5e1a;color:#d4a847;cursor:pointer;font-weight:bold;}
+
+@media(max-width:420px){
+  .stats3,.prof-stats{grid-template-columns:1fr 1fr;}
+  .grand{grid-template-columns:1fr;}
+  .year-grand{grid-template-columns:1fr 1fr;}
+  .backup-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<button class="secret-btn" onclick="goAdminLogin()" title="Admin">🦌</button>
+<div id="MSG" class="msg-box" style="display:none"></div>
+
+<!-- ══════════════ SCREEN: PIN ══════════════ -->
+<div id="sPin" class="screen on">
+  <div class="hdr">
+    <h1>🌲 Woods Landing 🌲</h1>
+    <div class="hdr-div">—⸻—</div>
+    <p>Time Clock</p>
+  </div>
+  <div class="pin-display">
+    <div class="pin-dot" id="d0"></div><div class="pin-dot" id="d1"></div>
+    <div class="pin-dot" id="d2"></div><div class="pin-dot" id="d3"></div>
+  </div>
+  <div class="keypad">
+    <div class="key" onclick="pa(1)">1</div><div class="key" onclick="pa(2)">2</div><div class="key" onclick="pa(3)">3</div>
+    <div class="key" onclick="pa(4)">4</div><div class="key" onclick="pa(5)">5</div><div class="key" onclick="pa(6)">6</div>
+    <div class="key" onclick="pa(7)">7</div><div class="key" onclick="pa(8)">8</div><div class="key" onclick="pa(9)">9</div>
+    <div class="key clear" onclick="pb()">⌫</div><div class="key" onclick="pa(0)">0</div>
+    <div class="key enter" onclick="ps()">✓</div>
+  </div>
+  <div class="pin-helper">
+    <strong>Employee PINs:</strong>
+    <table>
+      <tr><td>Marline (1111)</td><td>Aaron (2222)</td></tr>
+      <tr><td>Christopher (3333)</td><td>Gigi (4444)</td></tr>
+      <tr><td>Natalie (5555)</td><td>Kara (6666)</td></tr>
+      <tr><td>Sarah (7777)</td><td>Nathan (8888)</td></tr>
+      <tr><td colspan="2">Manager (1234) — Admin</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════════ SCREEN: EMPLOYEE CLOCK ══════════════ -->
+<div id="sClock" class="screen">
+  <div class="emp-bar"><h2 id="empNm"></h2><p id="empRl"></p></div>
+  <div class="etabs">
+    <div class="etab on" onclick="etab('time')" id="ET-time">⏰ Time</div>
+    <div class="etab" onclick="etab('tips')" id="ET-tips">💰 Tips</div>
+  </div>
+  <div id="EC-time" class="econtent on">
+    <div class="clock-btns">
+      <button class="cbtn cbtn-in" onclick="punch('in')">▶️ Clock In</button>
+      <button class="cbtn cbtn-out" onclick="punch('out')">⏹️ Clock Out</button>
+    </div>
+    <div class="status-box">
+      <div class="s-lbl">Current Status</div>
+      <div id="statusVal" class="s-val">—</div>
+      <div id="statusLast" class="s-last"></div>
+    </div>
+  </div>
+  <div id="EC-tips" class="econtent">
+    <div class="tips-box">
+      <div class="tips-ttl">💰 Report Your Tips</div>
+      <label class="tips-lbl">Total Tips ($)</label>
+      <input type="number" id="tipsAmt" class="tips-inp" placeholder="0.00" step="0.01" min="0">
+      <button class="tips-save" onclick="saveTips()">Save Tips</button>
+      <div class="tips-total" id="tipsTtl">Today's Tips: $0.00</div>
+    </div>
+  </div>
+  <button class="logout-btn" onclick="doLogout()">🚪 Log Out</button>
+</div>
+
+<!-- ══════════════ SCREEN: ADMIN ══════════════ -->
+<div id="sAdmin" class="screen">
+  <div class="admin-nav">
+    <div class="anav on" id="AN-dash" onclick="aNav('dash')">📊 Dashboard</div>
+    <div class="anav" id="AN-tax" onclick="aNav('tax')">📋 Tax Info</div>
+    <div class="anav" id="AN-profile" onclick="aNav('profile')" style="display:none">👤 Profile</div>
+    <div class="anav" id="AN-backup" onclick="aNav('backup')">💾 Backup</div>
+    <div class="anav" style="margin-left:auto" onclick="doLogout()">🚪 Logout</div>
+  </div>
+
+  <!-- PANEL: DASHBOARD -->
+  <div id="AP-dash" class="apanel on">
+    <div class="ph">
+      <h2>🦌 Manager Dashboard</h2>
+      <div class="btnrow">
+        <button class="ab ab-blue" onclick="openModal('mAddEmp')">➕ Add Employee</button>
+        <button class="ab ab-green" onclick="emailReport()">📧 Email</button>
+        <button class="ab ab-amber" onclick="downloadCSV()">📊 CSV</button>
+        <button class="ab ab-dark" onclick="printReport()">🖨️ Print</button>
+      </div>
+    </div>
+    <div class="datebar">
+      <div><label>From</label><input type="date" id="dS" onchange="loadDash()"></div>
+      <div><label>To</label><input type="date" id="dE" onchange="loadDash()"></div>
+      <button class="ab ab-amber" onclick="rng('week')">This Week</button>
+      <button class="ab ab-amber" onclick="rng('2weeks')">2 Weeks</button>
+      <button class="ab ab-amber" onclick="rng('month')">Month</button>
+      <button class="ab ab-amber" onclick="rng('6months')">6 Months</button>
+      <button class="ab ab-amber" onclick="rng('year')">Year</button>
+    </div>
+    <div id="dashContent"><p style="color:#6b4c1e;text-align:center;padding:20px">Select a date range above.</p></div>
+  </div>
+
+  <!-- PANEL: TAX INFO -->
+  <div id="AP-tax" class="apanel">
+    <div class="ph">
+      <h2>📋 Tax Info</h2>
+      <div class="btnrow"><button class="ab ab-dark" onclick="printTax()">🖨️ Print / PDF</button></div>
+    </div>
+    <div class="year-row">
+      <label style="color:#9c7a3c;font-size:13px">Year:</label>
+      <input type="number" id="taxYr" min="2020" max="2099">
+      <button class="ab ab-amber" onclick="loadTax()">Load</button>
+    </div>
+    <div id="taxContent"><p style="color:#6b4c1e;text-align:center;padding:20px">Enter a year and click Load.</p></div>
+  </div>
+
+  <!-- PANEL: EMPLOYEE PROFILE -->
+  <div id="AP-profile" class="apanel">
+    <div class="ph">
+      <h2 id="profTitle">Employee Profile</h2>
+      <div class="btnrow"><button class="ab ab-dark" onclick="printProf()">🖨️ Print</button></div>
+    </div>
+    <div class="datebar">
+      <div><label>From</label><input type="date" id="pS" onchange="loadProf()"></div>
+      <div><label>To</label><input type="date" id="pE" onchange="loadProf()"></div>
+      <button class="ab ab-amber" onclick="prng('week')">Week</button>
+      <button class="ab ab-amber" onclick="prng('month')">Month</button>
+      <button class="ab ab-amber" onclick="prng('6months')">6 Months</button>
+      <button class="ab ab-amber" onclick="prng('year')">Year</button>
+    </div>
+    <div id="profContent"><p style="color:#6b4c1e;text-align:center;padding:20px">Loading...</p></div>
+    <div style="text-align:center;margin-top:14px">
+      <button class="back-lnk" onclick="aNav('dash')">← Back to Dashboard</button>
+    </div>
+  </div>
+
+  <!-- PANEL: BACKUP -->
+  <div id="AP-backup" class="apanel">
+    <div class="ph"><h2>💾 Data Backup</h2></div>
+    <div class="bcard-big">
+      <h3>🛡️ 3-Layer Data Protection</h3>
+      <p>Your data is protected three ways simultaneously:</p>
+      <ul>
+        <li><span>Layer 1 — PostgreSQL Database</span> — Render keeps your data even through restarts and deploys</li>
+        <li><span>Layer 2 — Weekly Email Backup</span> — Full JSON + report emailed to you every Sunday 11pm</li>
+        <li><span>Layer 3 — Daily Google Drive</span> — Full JSON + CSV uploaded to your Drive folder every night at 2am</li>
+      </ul>
+    </div>
+
+    <div class="bcard-big" style="border-color:#8b5e1a">
+      <h3>☁️ Google Drive — Daily Automatic Backup</h3>
+      <p>Every night at 2am, the system uploads two files to your Google Drive folder:</p>
+      <ul>
+        <li><span>woods-landing-fullbackup-DATE.json</span> — complete database snapshot</li>
+        <li><span>woods-landing-daily-DATE.csv</span> — that day's clock-ins and outs</li>
+      </ul>
+      <p style="margin-top:10px;color:#9c7a3c"><strong>One-time setup (5 minutes):</strong></p>
+      <ol style="color:#6b4c1e;font-size:12px;padding-left:18px;line-height:2.2">
+        <li>Go to <span style="color:#d4a847">console.cloud.google.com</span> → New Project</li>
+        <li>Enable <span style="color:#d4a847">Google Drive API</span></li>
+        <li>Go to IAM → Service Accounts → Create → Download JSON key</li>
+        <li>Create a folder in your Google Drive, share it with the service account email</li>
+        <li>In Render environment variables, add:<br>
+          &nbsp;&nbsp;<span style="color:#d4a847">GOOGLE_SERVICE_ACCOUNT_JSON</span> = paste the entire JSON key file content<br>
+          &nbsp;&nbsp;<span style="color:#d4a847">GOOGLE_DRIVE_FOLDER_ID</span> = the ID at the end of your folder's URL
+        </li>
+      </ol>
+      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="ab ab-green" onclick="triggerDriveBackup()">☁️ Run Drive Backup Now</button>
+        <button class="ab ab-amber" onclick="downloadCSV()">📊 Download CSV</button>
+      </div>
+    </div>
+
+    <div class="backup-grid">
+      <div class="bcard">
+        <h3>📥 Manual JSON Backup</h3>
+        <p>Download a full JSON export of all data right now.</p>
+        <button class="ab ab-green" onclick="doManualBackup()">Download Backup</button>
+      </div>
+      <div class="bcard">
+        <h3>📧 Email Now</h3>
+        <p>Send a backup email immediately without waiting for Sunday.</p>
+        <button class="ab ab-blue" onclick="sendBackupEmail()">Send Email Now</button>
+      </div>
+    </div>
+    <div class="bcard-big">
+      <h3>📋 Backup Log</h3>
+      <p style="font-size:11px;margin-bottom:8px">Every backup — manual, daily Drive, and weekly email — is logged here automatically.</p>
+      <div id="backupLog">Loading...</div>
+    </div>
+  </div>
+</div><!-- end sAdmin -->
+
+<!-- ══════════════ MODALS ══════════════ -->
+<div id="mAddEmp" class="modal-bg">
+  <div class="modal">
+    <h2>Add Employee</h2>
+    <label>Full Name</label><input type="text" id="nName" placeholder="e.g. Jane">
+    <label>4-Digit PIN</label><input type="text" id="nPin" maxlength="4" placeholder="e.g. 9999">
+    <label>Hourly Rate ($)</label><input type="number" id="nRate" step="0.25" placeholder="15.00">
+    <div class="mact">
+      <button class="mcancel" onclick="closeModal('mAddEmp')">Cancel</button>
+      <button class="msave" onclick="addEmp()">Add</button>
+    </div>
+  </div>
+</div>
+
+<div id="mManage" class="modal-bg">
+  <div class="modal">
+    <h2 id="mngTitle">Manage Employee</h2>
+    <input type="hidden" id="mngId">
+    <label>Name</label><input type="text" id="mngName">
+    <label>Hourly Rate ($)</label><input type="number" id="mngRate" step="0.25">
+    <label>Pay Period</label>
+    <select id="mngPay">
+      <option value="weekly">Weekly</option>
+      <option value="biweekly">Bi-Weekly</option>
+      <option value="monthly">Monthly</option>
+    </select>
+    <label>New PIN (leave blank to keep current)</label>
+    <input type="text" id="mngPin" maxlength="4" placeholder="Leave blank to keep">
+    <label>Status</label>
+    <select id="mngActive"><option value="1">Active</option><option value="0">Inactive</option></select>
+    <div class="mact">
+      <button class="mcancel" onclick="closeModal('mManage')">Cancel</button>
+      <button class="msave" onclick="saveManage()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Role Selector Modal (employee clock-in/out) -->
+<div id="mRoleSelect" class="modal-bg">
+  <div class="modal">
+    <h2 id="roleSelectTitle">Select Your Role</h2>
+    <p style="color:#9c7a3c;font-size:13px;margin-bottom:14px">What role are you working today?</p>
+    <div id="roleOptions" style="display:grid;gap:10px;"></div>
+    <div class="mact" style="margin-top:14px">
+      <button class="mcancel" onclick="closeModal('mRoleSelect')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Admin: Edit Punch Modal -->
+<div id="mEditPunch" class="modal-bg">
+  <div class="modal">
+    <h2>Edit Punch</h2>
+    <input type="hidden" id="epId">
+    <label>Type</label>
+    <select id="epType">
+      <option value="in">Clock In</option>
+      <option value="out">Clock Out</option>
+      <option value="break_start">Break Start</option>
+      <option value="break_end">Break End</option>
+    </select>
+    <label>Date & Time</label>
+    <input type="datetime-local" id="epTime">
+    <label>Role (optional)</label>
+    <input type="text" id="epRole" placeholder="e.g. Serving">
+    <div class="mact">
+      <button class="mcancel" onclick="closeModal('mEditPunch')">Cancel</button>
+      <button class="ab ab-red" style="padding:9px 17px;border-radius:6px;font-weight:bold" onclick="deletePunch()">🗑️ Delete</button>
+      <button class="msave" onclick="saveEditPunch()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Admin: Add Punch Modal -->
+<div id="mAddPunch" class="modal-bg">
+  <div class="modal">
+    <h2 id="addPunchTitle">Add Punch</h2>
+    <input type="hidden" id="apEmpId">
+    <label>Type</label>
+    <select id="apType">
+      <option value="in">Clock In</option>
+      <option value="out">Clock Out</option>
+      <option value="break_start">Break Start</option>
+      <option value="break_end">Break End</option>
+    </select>
+    <label>Date & Time</label>
+    <input type="datetime-local" id="apTime">
+    <label>Role (optional)</label>
+    <input type="text" id="apRole" placeholder="e.g. Serving">
+    <div class="mact">
+      <button class="mcancel" onclick="closeModal('mAddPunch')">Cancel</button>
+      <button class="msave" onclick="saveAddPunch()">Add Punch</button>
+    </div>
+  </div>
+</div>
+
+<!-- Admin: Manage Roles Modal -->
+<div id="mRoles" class="modal-bg">
+  <div class="modal">
+    <h2 id="rolesTitle">Manage Roles</h2>
+    <input type="hidden" id="rolesEmpId">
+    <div id="rolesList" style="margin-bottom:14px;"></div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <input type="text" id="newRoleName" placeholder="New role name (e.g. Prep)" style="flex:1;padding:9px;border:1px solid #6b4c1e;border-radius:6px;background:#1a1208;color:#d4a847;font-size:14px">
+      <button class="msave" onclick="addRole()">Add</button>
+    </div>
+    <div class="mact" style="margin-top:14px">
+      <button class="mcancel" onclick="closeModal('mRoles')">Done</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════
+// STATE
+// ════════════════════════════════════
+let PIN='', empId=null, empRole='', profileId=null, profName='', refreshT=null, pendingPunchType=null;
+const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+// ════════════════════════════════════
+// SCREEN SWITCHER — simple, no conflicts
+// ════════════════════════════════════
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(el=>el.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+}
+
+// ════════════════════════════════════
+// MESSAGE BOX
+// ════════════════════════════════════
+let msgTimer=null;
+function msg(text,type){
+  const el=document.getElementById('MSG');
+  el.textContent=text;
+  el.className='msg-box msg-'+type;
+  el.style.display='block';
+  if(msgTimer) clearTimeout(msgTimer);
+  msgTimer=setTimeout(()=>{ el.style.display='none'; },3500);
+}
+
+// ════════════════════════════════════
+// PIN PAD
+// ════════════════════════════════════
+function pa(n){ if(PIN.length>=4) return; PIN+=n; dots(); if(PIN.length===4) setTimeout(ps,180); }
+function pb(){ PIN=PIN.slice(0,-1); dots(); }
+function dots(){ for(let i=0;i<4;i++) document.getElementById('d'+i).classList.toggle('filled',i<PIN.length); }
+
+async function ps(){
+  if(PIN.length!==4){ msg('Enter your 4-digit PIN','error'); return; }
+  try{
+    const d=await post('/api/login',{pin:PIN});
+    PIN=''; dots();
+    if(d.success){
+      empId=d.employee.id; empRole=d.employee.role;
+      if(empRole==='admin'){
+        showScreen('sAdmin');
+        aNav('dash');
+      } else {
+        document.getElementById('empNm').textContent=d.employee.name;
+        document.getElementById('empRl').textContent='👤 Employee';
+        showScreen('sClock');
+        msg(`Welcome, ${d.employee.name}! 🌲`,'success');
+        loadStatus(); loadTodayTips();
+        refreshT=setInterval(loadStatus,30000);
+      }
+    } else { msg(d.message||'Invalid PIN','error'); }
+  }catch(e){ msg('Connection error — check internet','error'); }
+}
+
+// ════════════════════════════════════
+// EMPLOYEE ACTIONS
+// ════════════════════════════════════
+function etab(t){
+  document.querySelectorAll('.etab').forEach(e=>e.classList.remove('on'));
+  document.querySelectorAll('.econtent').forEach(e=>e.classList.remove('on'));
+  document.getElementById('ET-'+t).classList.add('on');
+  document.getElementById('EC-'+t).classList.add('on');
+  if(t==='tips') loadTodayTips();
+}
+
+async function loadStatus(){
+  try{
+    const d=await get('/api/status');
+    if(!d.success) return;
+    const el=document.getElementById('statusVal');
+    const type=d.lastPunch?d.lastPunch.punch_type:'out';
+    if(!d.lastPunch||type==='out'){ el.textContent='⏹️ Clocked Out'; el.style.color='#e07050'; }
+    else{ el.textContent='✅ Clocked In'; el.style.color='#6dbf5a'; }
+    if(d.lastPunch){
+      const t=new Date(d.lastPunch.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+      document.getElementById('statusLast').textContent=`Last: ${type.replace('_',' ')} at ${t}`;
+    }
+  }catch(e){}
+}
+
+async function loadTodayTips(){
+  try{
+    const d=await get('/api/tips/today');
+    if(d.success&&d.tip){
+      document.getElementById('tipsAmt').value=d.tip.total_tips||'';
+      document.getElementById('tipsTtl').textContent=`Today's Tips: $${(d.tip.total_tips||0).toFixed(2)}`;
+    }
+  }catch(e){}
+}
+
+async function punch(type){
+  // Check if this employee has roles assigned
+  try{
+    const d=await get('/api/my-roles');
+    if(d.success && d.roles && d.roles.length>0){
+      // Show role selection modal
+      pendingPunchType=type;
+      document.getElementById('roleSelectTitle').textContent=type==='in'?'Select Role — Clocking In':'Select Role — Clocking Out';
+      const container=document.getElementById('roleOptions');
+      container.innerHTML='';
+      d.roles.forEach(role=>{
+        const btn=document.createElement('button');
+        btn.className='cbtn';
+        btn.style.cssText='background:linear-gradient(135deg,#3d2a0a,#2a1f0e);border:2px solid #8b5e1a;color:#d4a847;padding:18px;font-size:17px;border-radius:10px;cursor:pointer;';
+        btn.textContent='🎭 '+role;
+        btn.onclick=()=>{ closeModal('mRoleSelect'); doPunch(type,role); };
+        container.appendChild(btn);
+      });
+      openModal('mRoleSelect');
+    } else {
+      doPunch(type, null);
+    }
+  }catch(e){ doPunch(type, null); }
+}
+
+async function doPunch(type, work_role){
+  try{
+    const d=await post('/api/clock',{type, work_role});
+    if(d.success){
+      const roleLabel=work_role?` (${work_role})`:'';
+      msg(type==='in'?`✅ Clocked in${roleLabel}! Have a great shift! 🌲`:`👋 Clocked out${roleLabel}! See ya!`,'success');
+      loadStatus();
+    } else msg(d.message||'Error','error');
+  }catch(e){ msg('Connection error','error'); }
+}
+
+async function saveTips(){
+  const total=parseFloat(document.getElementById('tipsAmt').value)||0;
+  try{
+    const d=await post('/api/tips/report',{total_tips:total});
+    if(d.success){ msg(`Tips saved! $${total.toFixed(2)} 💰`,'success'); document.getElementById('tipsTtl').textContent=`Today's Tips: $${total.toFixed(2)}`; }
+  }catch(e){ msg('Error saving tips','error'); }
+}
+
+function doLogout(){
+  clearInterval(refreshT);
+  fetch('/api/logout',{method:'POST'});
+  empId=null; empRole=''; PIN=''; dots();
+  showScreen('sPin');
+}
+
+// ════════════════════════════════════
+// ADMIN NAVIGATION — clean & simple
+// ════════════════════════════════════
+function aNav(panel){
+  // Switch nav tabs
+  document.querySelectorAll('.anav').forEach(el=>el.classList.remove('on'));
+  const navEl=document.getElementById('AN-'+panel);
+  if(navEl) navEl.classList.add('on');
+  // Switch panels
+  document.querySelectorAll('.apanel').forEach(el=>el.classList.remove('on'));
+  const panelEl=document.getElementById('AP-'+panel);
+  if(panelEl) panelEl.classList.add('on');
+  // Load data for panel
+  if(panel==='dash') loadDash();
+  if(panel==='tax'){ document.getElementById('taxYr').value=new Date().getFullYear(); loadTax(); }
+  if(panel==='profile'&&profileId) loadProf();
+  if(panel==='backup') loadBackupLog();
+}
+
+function goAdminLogin(){
+  showScreen('sPin');
+  msg('Enter Manager PIN (1234)','success');
+}
+
+// ════════════════════════════════════
+// DASHBOARD
+// ════════════════════════════════════
+function rng(r){
+  const today=new Date();
+  let start=new Date(today);
+  if(r==='week') start.setDate(today.getDate()-today.getDay());
+  else if(r==='2weeks') start.setDate(today.getDate()-13);
+  else if(r==='month') start=new Date(today.getFullYear(),today.getMonth(),1);
+  else if(r==='6months') start=new Date(today.getFullYear(),today.getMonth()-5,1);
+  else if(r==='year') start=new Date(today.getFullYear(),0,1);
+  document.getElementById('dS').value=fmt(start);
+  document.getElementById('dE').value=fmt(today);
+  loadDash();
+}
+
+async function loadDash(){
+  const s=document.getElementById('dS').value, e=document.getElementById('dE').value;
+  if(!s||!e) return;
+  document.getElementById('dashContent').innerHTML='<p style="color:#9c7a3c;text-align:center;padding:20px">Loading...</p>';
+  try{
+    const [pr,tr]=await Promise.all([get(`/api/report/punches?start=${s}&end=${e}`),get(`/api/report/tips?start=${s}&end=${e}`)]);
+    renderDash(pr.punches||[],tr.tips||[]);
+  }catch(e){ document.getElementById('dashContent').innerHTML='<p style="color:#e07050;text-align:center;padding:20px">Error loading — check connection</p>'; }
+}
+
+function renderDash(punches,tips){
+  const emps={};
+  punches.forEach(p=>{
+    if(!emps[p.employee_name]) emps[p.employee_name]={punches:[],tips:0,rate:p.hourly_rate,eid:p.employee_id};
+    emps[p.employee_name].punches.push(p);
+  });
+  tips.forEach(t=>{ if(emps[t.employee_name]) emps[t.employee_name].tips+=(t.total_tips||0); });
+  if(!Object.keys(emps).length){
+    document.getElementById('dashContent').innerHTML='<p style="color:#6b4c1e;text-align:center;padding:20px">No data for this period.</p>';
+    return;
+  }
+  let grandH=0,grandP=0,grandT=0,html='';
+  Object.entries(emps).sort(([a],[b])=>a.localeCompare(b)).forEach(([name,d])=>{
+    const h=calcH(d.punches), pay=h*d.rate;
+    grandH+=h; grandP+=pay; grandT+=d.tips;
+    html+=`<div class="ecard">
+      <div class="ecard-name" onclick="openProf(${d.eid},'${name.replace(/'/g,"\\'")}')">🌲 ${name}</div>
+      <div class="stats3">
+        <div class="sbox"><div class="slbl">Hours</div><div class="sval">${h.toFixed(2)}</div></div>
+        <div class="sbox"><div class="slbl">Gross Pay</div><div class="sval">$${pay.toFixed(2)}</div></div>
+        <div class="sbox"><div class="slbl">Tips</div><div class="sval">$${d.tips.toFixed(2)}</div></div>
+      </div>
+      <div class="card-acts">
+        <button class="ab ab-blue" onclick="openProf(${d.eid},'${name.replace(/'/g,"\\'")}')">👤 View Profile</button>
+        <button class="ab ab-amber" onclick="openManage(${d.eid},'${name.replace(/'/g,"\\'")}',${d.rate})">⚙️ Manage Employee</button>
+      </div>
+    </div>`;
+  });
+  html+=`<div class="grand">
+    <div><div class="gv">${grandH.toFixed(2)}</div><div class="gl">Total Hours</div></div>
+    <div><div class="gv">$${grandP.toFixed(2)}</div><div class="gl">Gross Pay</div></div>
+    <div><div class="gv">$${grandT.toFixed(2)}</div><div class="gl">Total Tips</div></div>
+  </div>`;
+  document.getElementById('dashContent').innerHTML=html;
+}
+
+// ════════════════════════════════════
+// MANAGE EMPLOYEE
+// ════════════════════════════════════
+function openManage(id,name,rate){
+  document.getElementById('mngId').value=id;
+  document.getElementById('mngTitle').textContent=`Manage: ${name}`;
+  document.getElementById('mngName').value=name;
+  document.getElementById('mngRate').value=rate;
+  document.getElementById('mngPin').value='';
+  get(`/api/admin/employee/${id}`).then(d=>{
+    if(d.success){
+      document.getElementById('mngPay').value=d.employee.pay_period||'weekly';
+      document.getElementById('mngActive').value=d.employee.active;
+    }
+  }).catch(()=>{});
+  openModal('mManage');
+}
+
+async function saveManage(){
+  const id=document.getElementById('mngId').value;
+  const body={name:document.getElementById('mngName').value,hourly_rate:document.getElementById('mngRate').value,pay_period:document.getElementById('mngPay').value,active:document.getElementById('mngActive').value};
+  const p=document.getElementById('mngPin').value;
+  if(p) body.pin=p;
+  try{
+    const d=await fetch(`/api/admin/employees/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json());
+    if(d.success){ msg('Employee updated ✅','success'); closeModal('mManage'); loadDash(); }
+    else msg('Error saving','error');
+  }catch(e){ msg('Connection error','error'); }
+}
+
+// ════════════════════════════════════
+// ADD EMPLOYEE
+// ════════════════════════════════════
+async function addEmp(){
+  const name=document.getElementById('nName').value.trim();
+  const pin=document.getElementById('nPin').value.trim();
+  const rate=document.getElementById('nRate').value;
+  if(!name||!pin||pin.length!==4||!rate){ msg('All fields required — PIN must be 4 digits','error'); return; }
+  try{
+    const d=await post('/api/admin/employees',{name,pin,hourly_rate:parseFloat(rate)});
+    if(d.success){ msg(`${name} added! ✅`,'success'); closeModal('mAddEmp'); ['nName','nPin','nRate'].forEach(i=>document.getElementById(i).value=''); loadDash(); }
+    else msg(d.error||'Error adding employee','error');
+  }catch(e){ msg('Connection error','error'); }
+}
+
+// ════════════════════════════════════
+// EMPLOYEE PROFILE
+// ════════════════════════════════════
+function openProf(id,name){
+  profileId=id; profName=name;
+  document.getElementById('profTitle').textContent=`👤 ${name}`;
+  document.getElementById('AN-profile').style.display='';
+  prng('week');
+  aNav('profile');
+}
+
+function prng(r){
+  const today=new Date();
+  let start=new Date(today);
+  if(r==='week') start.setDate(today.getDate()-today.getDay());
+  else if(r==='month') start=new Date(today.getFullYear(),today.getMonth(),1);
+  else if(r==='6months') start=new Date(today.getFullYear(),today.getMonth()-5,1);
+  else if(r==='year') start=new Date(today.getFullYear(),0,1);
+  document.getElementById('pS').value=fmt(start);
+  document.getElementById('pE').value=fmt(today);
+  loadProf();
+}
+
+async function loadProf(){
+  if(!profileId) return;
+  const s=document.getElementById('pS').value, e=document.getElementById('pE').value;
+  if(!s||!e) return;
+  document.getElementById('profContent').innerHTML='<p style="color:#9c7a3c;text-align:center;padding:20px">Loading...</p>';
+  try{
+    const d=await get(`/api/admin/employee/${profileId}?start=${s}&end=${e}`);
+    if(!d.success){ document.getElementById('profContent').innerHTML='<p style="color:#e07050;text-align:center">Error loading profile</p>'; return; }
+    const emp=d.employee, st=d.stats;
+    let html=`
+      <div class="prof-banner">
+        <div class="prof-name">🌲 ${emp.name}</div>
+        <div class="prof-meta">$${emp.hourly_rate}/hr &nbsp;·&nbsp; ${ucfirst(emp.pay_period||'weekly')} Pay &nbsp;·&nbsp; ${emp.active?'✅ Active':'❌ Inactive'}</div>
+      </div>
+      <div class="prof-stats">
+        <div class="pstat"><div class="pv">${st.totalHours}</div><div class="pl">Hours</div></div>
+        <div class="pstat"><div class="pv">$${st.grossPay}</div><div class="pl">Gross Pay</div></div>
+        <div class="pstat"><div class="pv">$${st.totalTips}</div><div class="pl">Tips</div></div>
+      </div>`;
+
+    // Punch log
+    html+=`<div class="sect"><h3>Punch Log (${d.punches.length} entries)</h3>`;
+    html+=`<div style="display:flex;justify-content:flex-end;margin-bottom:8px;gap:6px">
+      <button class="ab ab-green" onclick="openAddPunch(${emp.id},'${emp.name.replace(/'/g,"\\'")}')">➕ Add Punch</button>
+    </div>`;
+    if(!d.punches.length){ html+='<p style="color:#6b4c1e;font-size:13px">No punches for this period.</p>'; }
+    else{
+      // Group by day
+      const byDay={};
+      d.punches.forEach(p=>{ const day=p.timestamp.split('T')[0]||p.timestamp.substring(0,10); if(!byDay[day]) byDay[day]=[]; byDay[day].push(p); });
+      html+=`<table class="ptable"><thead><tr><th>Date</th><th>Time</th><th>Type</th><th>Role</th><th></th></tr></thead><tbody>`;
+      Object.entries(byDay).sort().forEach(([day,ps])=>{
+        ps.forEach(p=>{
+          const dt=new Date(p.timestamp);
+          const tc=p.punch_type==='in'?'tin':'tout';
+          const tl=p.punch_type.replace('_',' ').replace(/\b\w/g,c=>c.toUpperCase());
+          const localDT=toLocalDT(p.timestamp);
+          html+=`<tr>
+            <td>${dt.toLocaleDateString()}</td>
+            <td>${dt.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</td>
+            <td class="${tc}">${tl}</td>
+            <td style="color:#9c7a3c">${p.work_role||'—'}</td>
+            <td><button class="ab ab-dark" style="padding:4px 8px;font-size:11px" onclick="openEditPunch(${p.id},'${p.punch_type}','${localDT}','${(p.work_role||'').replace(/'/g,"\\'")}')">✏️</button></td>
+          </tr>`;
+        });
+      });
+      html+=`</tbody></table>`;
+    }
+    html+=`</div>`;
+
+    // Tips log
+    html+=`<div class="sect"><h3>Tips Log (${d.tips.length} entries)</h3>`;
+    if(!d.tips.length){ html+='<p style="color:#6b4c1e;font-size:13px">No tips for this period.</p>'; }
+    else{
+      html+=`<table class="ptable"><thead><tr><th>Date</th><th>Tips</th></tr></thead><tbody>`;
+      d.tips.forEach(t=>{ html+=`<tr><td>${t.date}</td><td style="color:#d4a847;font-weight:bold">$${(t.total_tips||0).toFixed(2)}</td></tr>`; });
+      html+=`</tbody></table>`;
+    }
+    html+=`</div>`;
+    html+=`<div style="margin-top:4px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="ab ab-amber" onclick="openManage(${emp.id},'${emp.name.replace(/'/g,"\\'")}',${emp.hourly_rate})">⚙️ Manage Employee</button>
+      <button class="ab ab-blue" onclick="openRoles(${emp.id},'${emp.name.replace(/'/g,"\\'")}')">🎭 Manage Roles</button>
+    </div>`;
+    document.getElementById('profContent').innerHTML=html;
+  }catch(e){ document.getElementById('profContent').innerHTML='<p style="color:#e07050;text-align:center;padding:20px">Error loading profile — '+e.message+'</p>'; }
+}
+
+function printProf(){
+  const s=document.getElementById('pS').value, e=document.getElementById('pE').value;
+  const content=document.getElementById('profContent').innerHTML;
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><title>Employee Profile</title>
+  <style>body{font-family:Georgia,serif;padding:30px;color:#2a1f0e;}h1,h2,h3{color:#8b5e1a;}table{width:100%;border-collapse:collapse;}th{background:#3d2a0a;color:#d4a847;padding:8px;text-align:left;font-size:11px;}td{padding:7px 8px;border-bottom:1px solid #ddd;font-size:13px;}.tin{color:green;}.tout{color:red;}button{display:none!important;}div[style*="margin-top"]{display:none!important;}</style>
+  </head><body><h1>🌲 Woods Landing — ${profName}</h1>
+  <p style="color:#888;font-size:13px">Period: ${s} to ${e} · Generated: ${new Date().toLocaleString()}</p><br>
+  ${content}</body></html>`);
+  w.document.close(); setTimeout(()=>w.print(),500);
+}
+
+// ════════════════════════════════════
+// TAX INFO
+// ════════════════════════════════════
+async function loadTax(){
+  const y=document.getElementById('taxYr').value||new Date().getFullYear();
+  document.getElementById('taxContent').innerHTML='<p style="color:#9c7a3c;text-align:center;padding:20px">Loading year data...</p>';
+  try{
+    const d=await get(`/api/report/tax?year=${y}`);
+    if(!d.success||!d.employees.length){ document.getElementById('taxContent').innerHTML='<p style="color:#6b4c1e;text-align:center;padding:20px">No data for '+y+'</p>'; return; }
+    let gh=0,gg=0,gt=0,ge=0;
+    d.employees.forEach(e=>{ gh+=parseFloat(e.total_hours); gg+=parseFloat(e.total_gross); gt+=parseFloat(e.total_tips); ge+=parseFloat(e.total_earnings); });
+    let html=`<div class="year-grand">
+      <div><div class="yv">${gh.toFixed(2)}</div><div class="yl">Total Hours</div></div>
+      <div><div class="yv">$${gg.toFixed(2)}</div><div class="yl">Gross Pay</div></div>
+      <div><div class="yv">$${gt.toFixed(2)}</div><div class="yl">Tips</div></div>
+      <div><div class="yv">$${ge.toFixed(2)}</div><div class="yl">Total Earnings</div></div>
+    </div>`;
+    d.employees.forEach(emp=>{
+      html+=`<div class="tax-card">
+        <div class="tax-hdr" onclick="toggleMonth('tm-${emp.id}')">
+          <div class="tax-empname">🌲 ${emp.name}</div>
+          <div class="tax-summary">
+            <div>${emp.total_hours}h &nbsp;·&nbsp; Gross: <span>$${emp.total_gross}</span> &nbsp;·&nbsp; Tips: <span>$${emp.total_tips}</span> &nbsp;·&nbsp; Total: <span>$${emp.total_earnings}</span></div>
+          </div>
+        </div>
+        <div class="tax-months" id="tm-${emp.id}"><div class="mthgrid">`;
+      for(let m=1;m<=12;m++){
+        const md=emp.monthly[m];
+        html+=`<div class="mbox"><div class="mn">${MONTHS[m-1]}</div>
+          <div class="mv">${md.hours}h</div><div class="ml">Hours</div>
+          <div class="mv" style="margin-top:4px">$${md.gross}</div><div class="ml">Gross</div>
+          <div class="mv" style="margin-top:4px">$${md.tips}</div><div class="ml">Tips</div>
+        </div>`;
+      }
+      html+=`</div></div></div>`;
+    });
+    document.getElementById('taxContent').innerHTML=html;
+  }catch(e){ document.getElementById('taxContent').innerHTML='<p style="color:#e07050;text-align:center;padding:20px">Error loading tax data: '+e.message+'</p>'; }
+}
+
+function toggleMonth(id){ document.getElementById(id).classList.toggle('open'); }
+
+function printTax(){
+  const y=document.getElementById('taxYr').value||new Date().getFullYear();
+  const content=document.getElementById('taxContent').innerHTML;
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><title>Tax Report ${y}</title>
+  <style>body{font-family:Georgia,serif;padding:30px;color:#2a1f0e;}h1{color:#8b5e1a;}.tax-card{border:1px solid #ddd;border-radius:6px;margin-bottom:14px;overflow:hidden;}.tax-hdr{padding:13px;background:#f5f0e8;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;}.tax-empname{font-weight:bold;color:#5a3a0a;font-size:15px;}.tax-summary{color:#666;font-size:12px;}.tax-summary span{color:#333;font-weight:bold;}.tax-months{display:block!important;padding:10px 13px;}.mthgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;}.mbox{background:#faf7f2;border:1px solid #e0d5c0;border-radius:4px;padding:8px;}.mn{font-size:9px;color:#999;text-transform:uppercase;}.mv{font-size:13px;font-weight:bold;color:#333;}.ml{font-size:9px;color:#999;}.year-grand{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;background:#3d2a0a;color:#d4a847;padding:15px;border-radius:8px;margin-bottom:16px;text-align:center;}.yv{font-size:20px;font-weight:bold;}.yl{font-size:11px;opacity:.75;}</style>
+  </head><body><h1>🌲 Woods Landing Tax Report — ${y}</h1>
+  <p style="color:#888;font-size:13px">Generated: ${new Date().toLocaleString()}</p><br>
+  ${content}</body></html>`);
+  w.document.close(); setTimeout(()=>w.print(),500);
+}
+
+// ════════════════════════════════════
+// BACKUP PAGE
+// ════════════════════════════════════
+async function loadBackupLog(){
+  try{
+    const d=await get('/api/admin/backups');
+    if(!d.success||!d.backups.length){ document.getElementById('backupLog').textContent='No backups yet.'; return; }
+    const typeLabels={'manual':'📥 Manual Download','manual_email':'📧 Manual Email','weekly_auto':'📬 Weekly Email','daily_drive':'☁️ Google Drive'};
+    let html='';
+    d.backups.forEach(b=>{
+      const dt=new Date(b.backup_date).toLocaleString();
+      const stats=typeof b.stats==='string'?JSON.parse(b.stats||'{}'):b.stats||{};
+      let stTxt='';
+      if(stats.employees) stTxt=`${stats.employees} emps, ${stats.punches} punches`;
+      else if(stats.sentTo) stTxt=`→ ${stats.sentTo}`;
+      else if(stats.startDate) stTxt=`${stats.startDate} to ${stats.endDate}`;
+      else if(stats.error) stTxt=`⚠️ ${stats.error}`;
+      const label=typeLabels[b.type]||b.type;
+      const color=b.status==='success'?'#6dbf5a':b.status==='skipped'?'#9c7a3c':'#e07050';
+      html+=`<div style="padding:7px 0;border-bottom:1px solid #2a1f0e;display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;"><span style="color:#9c7a3c;font-size:12px">${dt}</span><span style="color:${color};font-size:12px;white-space:nowrap">${label}</span><span style="color:#6b4c1e;font-size:11px;text-align:right">${stTxt}</span></div>`;
+    });
+    document.getElementById('backupLog').innerHTML=html||'No records yet.';
+  }catch(e){ document.getElementById('backupLog').textContent='Error loading backup log.'; }
+}
+
+async function doManualBackup(){
+  try{
+    msg('Creating backup...','success');
+    const d=await post('/api/admin/backup',{});
+    if(d.success){
+      msg(`✅ Backup ready: ${d.stats.employees} employees, ${d.stats.punches} punches, ${d.stats.tips} tip entries`,'success');
+      const blob=new Blob([JSON.stringify(d.backup,null,2)],{type:'application/json'});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=url; a.download=`woods-landing-backup-${fmt(new Date())}.json`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      loadBackupLog();
+    } else msg('Backup failed','error');
+  }catch(e){ msg('Backup error: '+e.message,'error'); }
+}
+
+async function downloadCSV(){
+  const s=document.getElementById('dS')?.value || fmt(new Date(new Date().getFullYear(),0,1));
+  const e=document.getElementById('dE')?.value || fmt(new Date());
+  if(!s||!e){ msg('Select a date range on the dashboard first','error'); return; }
+  msg('Generating CSV...','success');
+  try{
+    // Must use fetch with credentials — bare <a href> does not send session cookies
+    const r=await fetch(`/api/report/csv?start=${s}&end=${e}`,{credentials:'same-origin'});
+    if(!r.ok){
+      const errData=await r.json().catch(()=>({}));
+      msg(errData.message||`Server error ${r.status}`,'error'); return;
+    }
+    const blob=await r.blob();
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download=`woods-landing-${s}-to-${e}.csv`;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    msg('✅ CSV downloaded!','success');
+  }catch(err){ msg('Error generating CSV: '+err.message,'error'); }
+}
+
+async function triggerDriveBackup(){
+  msg('Triggering Google Drive backup...','success');
+  try{
+    const d=await post('/api/admin/drive-backup',{});
+    if(d.success) msg('✅ Drive backup complete! Check your Google Drive folder.','success');
+    else if(d.skipped) msg('Google Drive not configured yet — see setup instructions above','error');
+    else msg(d.error||'Drive backup failed','error');
+    loadBackupLog();
+  }catch(e){ msg('Error: '+e.message,'error'); }
+}
+
+async function sendBackupEmail(){
+  const today=new Date();
+  const weekAgo=new Date(today); weekAgo.setDate(today.getDate()-7);
+  const start=fmt(weekAgo), end=fmt(today);
+  try{
+    msg('Sending backup email...','success');
+    const d=await post('/api/send-report',{startDate:start,endDate:end});
+    if(d.success&&!d.emailFailed) msg('✅ Backup email sent!','success');
+    else if(d.emailFailed){ msg('Email not configured — downloading instead','success'); setTimeout(()=>doManualBackup(),500); }
+    else msg(d.message||'Error','error');
+  }catch(e){ msg('Error: '+e.message,'error'); }
+}
+
+// ════════════════════════════════════
+// REPORT: EMAIL & PRINT
+// ════════════════════════════════════
+async function emailReport(){
+  const s=document.getElementById('dS').value, e=document.getElementById('dE').value;
+  if(!s||!e){ msg('Select a date range first','error'); return; }
+  if(!confirm(`Email report for ${s} to ${e}?`)) return;
+  msg('Sending...','success');
+  try{
+    const d=await post('/api/send-report',{startDate:s,endDate:e});
+    if(d.success&&!d.emailFailed) msg('✅ Report emailed!','success');
+    else if(d.emailFailed){ msg('Email not configured — opening printable report','success'); openTxtWin(d.report); }
+    else msg(d.message||'Error','error');
+  }catch(e){ msg('Connection error','error'); }
+}
+
+async function printReport(){
+  const s=document.getElementById('dS').value, e=document.getElementById('dE').value;
+  if(!s||!e){ msg('Select a date range first','error'); return; }
+  try{
+    const [pr,tr]=await Promise.all([get(`/api/report/punches?start=${s}&end=${e}`),get(`/api/report/tips?start=${s}&end=${e}`)]);
+    const punches=pr.punches||[], tips=tr.tips||[];
+    const emps={};
+    punches.forEach(p=>{ if(!emps[p.employee_name]) emps[p.employee_name]={punches:[],tips:0,rate:p.hourly_rate}; emps[p.employee_name].punches.push(p); });
+    tips.forEach(t=>{ if(emps[t.employee_name]) emps[t.employee_name].tips+=(t.total_tips||0); });
+    let rows='',gh=0,gp=0,gt=0;
+    Object.entries(emps).sort(([a],[b])=>a.localeCompare(b)).forEach(([name,d])=>{
+      const h=calcH(d.punches),pay=h*d.rate; gh+=h;gp+=pay;gt+=d.tips;
+      rows+=`<tr><td>${name}</td><td>${h.toFixed(2)}</td><td>$${d.rate.toFixed(2)}</td><td>$${pay.toFixed(2)}</td><td>$${d.tips.toFixed(2)}</td></tr>`;
+    });
+    const w=window.open('','_blank');
+    w.document.write(`<!DOCTYPE html><html><head><title>Woods Landing Report</title>
+    <style>body{font-family:Georgia,serif;padding:30px;color:#2a1f0e;}h1{color:#8b5e1a;}table{width:100%;border-collapse:collapse;}th{background:#3d2a0a;color:#d4a847;padding:10px;text-align:left;}td{padding:9px 10px;border-bottom:1px solid #eee;}tr:nth-child(even)td{background:#faf7f2;}.tot{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;background:#3d2a0a;color:#d4a847;padding:16px;border-radius:8px;margin-top:16px;text-align:center;}.tv{font-size:22px;font-weight:bold;}.tl{font-size:11px;opacity:.75;}@media print{button{display:none!important;}}</style>
+    </head><body><h1>🌲 Woods Landing Time Clock Report</h1>
+    <p style="color:#888;font-size:13px">Period: <strong>${s}</strong> to <strong>${e}</strong> · ${new Date().toLocaleString()}</p>
+    <table><thead><tr><th>Employee</th><th>Hours</th><th>Rate</th><th>Gross Pay</th><th>Tips</th></tr></thead><tbody>${rows}</tbody></table>
+    <div class="tot"><div><div class="tv">${gh.toFixed(2)}</div><div class="tl">Total Hours</div></div><div><div class="tv">$${gp.toFixed(2)}</div><div class="tl">Gross Pay</div></div><div><div class="tv">$${gt.toFixed(2)}</div><div class="tl">Total Tips</div></div></div>
+    <br><button onclick="window.print()" style="padding:12px 28px;background:#8b5e1a;color:#d4a847;border:none;border-radius:8px;font-size:15px;cursor:pointer;">🖨️ Print / Save as PDF</button>
+    </body></html>`);
+    w.document.close(); setTimeout(()=>w.print(),500);
+  }catch(e){ msg('Error generating report','error'); }
+}
+
+function openTxtWin(text){
+  const w=window.open('','_blank');
+  w.document.write('<pre style="font-family:monospace;padding:20px;font-size:13px">'+text+'</pre>');
+  w.document.title='Woods Landing Report'; w.print();
+}
+
+// ════════════════════════════════════
+// ADMIN: PUNCH EDITING
+// ════════════════════════════════════
+function toLocalDT(isoStr){
+  // Convert ISO timestamp to datetime-local string in local timezone
+  const d=new Date(isoStr);
+  const pad=n=>String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function openEditPunch(id, type, localDT, work_role){
+  document.getElementById('epId').value=id;
+  document.getElementById('epType').value=type;
+  document.getElementById('epTime').value=localDT;
+  document.getElementById('epRole').value=work_role||'';
+  openModal('mEditPunch');
+}
+
+async function saveEditPunch(){
+  const id=document.getElementById('epId').value;
+  const punch_type=document.getElementById('epType').value;
+  const localDT=document.getElementById('epTime').value;
+  const work_role=document.getElementById('epRole').value.trim();
+  if(!localDT){ msg('Date/time required','error'); return; }
+  // Convert datetime-local (local time) to ISO
+  const ts=new Date(localDT).toISOString();
+  try{
+    const d=await fetch(`/api/admin/punches/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({timestamp:ts,punch_type,work_role:work_role||null})}).then(r=>r.json());
+    if(d.success){ msg('Punch updated ✅','success'); closeModal('mEditPunch'); loadProf(); }
+    else msg(d.error||'Error saving','error');
+  }catch(e){ msg('Connection error','error'); }
+}
+
+async function deletePunch(){
+  if(!confirm('Delete this punch? This cannot be undone.')) return;
+  const id=document.getElementById('epId').value;
+  try{
+    const d=await fetch(`/api/admin/punches/${id}`,{method:'DELETE'}).then(r=>r.json());
+    if(d.success){ msg('Punch deleted','success'); closeModal('mEditPunch'); loadProf(); }
+    else msg(d.error||'Error','error');
+  }catch(e){ msg('Connection error','error'); }
+}
+
+function openAddPunch(empId, empName){
+  document.getElementById('apEmpId').value=empId;
+  document.getElementById('addPunchTitle').textContent=`Add Punch — ${empName}`;
+  document.getElementById('apType').value='in';
+  document.getElementById('apTime').value=toLocalDT(new Date().toISOString());
+  document.getElementById('apRole').value='';
+  openModal('mAddPunch');
+}
+
+async function saveAddPunch(){
+  const employee_id=document.getElementById('apEmpId').value;
+  const punch_type=document.getElementById('apType').value;
+  const localDT=document.getElementById('apTime').value;
+  const work_role=document.getElementById('apRole').value.trim();
+  if(!localDT){ msg('Date/time required','error'); return; }
+  const ts=new Date(localDT).toISOString();
+  try{
+    const d=await post('/api/admin/punches',{employee_id,punch_type,timestamp:ts,work_role:work_role||null});
+    if(d.success){ msg('Punch added ✅','success'); closeModal('mAddPunch'); loadProf(); }
+    else msg(d.error||'Error adding punch','error');
+  }catch(e){ msg('Connection error','error'); }
+}
+
+// ════════════════════════════════════
+// ADMIN: MANAGE ROLES
+// ════════════════════════════════════
+async function openRoles(empId, empName){
+  document.getElementById('rolesEmpId').value=empId;
+  document.getElementById('rolesTitle').textContent=`🎭 Roles — ${empName}`;
+  document.getElementById('newRoleName').value='';
+  await loadRolesList(empId);
+  openModal('mRoles');
+}
+
+async function loadRolesList(empId){
+  if(!empId) empId=document.getElementById('rolesEmpId').value;
+  try{
+    const d=await get(`/api/admin/employee/${empId}/roles`);
+    const container=document.getElementById('rolesList');
+    if(!d.roles||!d.roles.length){
+      container.innerHTML='<p style="color:#6b4c1e;font-size:13px;margin-bottom:10px">No roles assigned yet.</p>';
+      return;
+    }
+    let html='';
+    d.roles.forEach(r=>{
+      html+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:#1a1208;border-radius:7px;margin-bottom:7px;border:1px solid #3d2a0a">
+        <span style="color:#d4a847;font-size:14px">🎭 ${r.role_name}</span>
+        <button class="ab ab-red" style="padding:4px 9px;font-size:11px" onclick="removeRole(${r.id})">Remove</button>
+      </div>`;
+    });
+    container.innerHTML=html;
+  }catch(e){ document.getElementById('rolesList').innerHTML='<p style="color:#e07050">Error loading roles</p>'; }
+}
+
+async function addRole(){
+  const empId=document.getElementById('rolesEmpId').value;
+  const name=document.getElementById('newRoleName').value.trim();
+  if(!name){ msg('Enter a role name','error'); return; }
+  try{
+    const d=await post(`/api/admin/employee/${empId}/roles`,{role_name:name});
+    if(d.success){ document.getElementById('newRoleName').value=''; loadRolesList(empId); }
+    else msg(d.error||'Error','error');
+  }catch(e){ msg('Connection error','error'); }
+}
+
+async function removeRole(roleId){
+  if(!confirm('Remove this role?')) return;
+  try{
+    const d=await fetch(`/api/admin/employee/roles/${roleId}`,{method:'DELETE'}).then(r=>r.json());
+    if(d.success){ loadRolesList(); }
+    else msg(d.error||'Error','error');
+  }catch(e){ msg('Connection error','error'); }
+}
+
+// ════════════════════════════════════
+// UTILS
+// ════════════════════════════════════
+function calcH(punches){
+  let mins=0,last=null;
+  [...punches].sort((a,b)=>new Date(a.timestamp)-new Date(b.timestamp)).forEach(p=>{
+    if(p.punch_type==='in') last=new Date(p.timestamp);
+    else if(p.punch_type==='out'&&last){mins+=(new Date(p.timestamp)-last)/60000;last=null;}
+  });
+  return mins/60;
+}
+function fmt(d){ return d.toISOString().split('T')[0]; }
+function ucfirst(s){ return s?s.charAt(0).toUpperCase()+s.slice(1):''; }
+async function get(url){ const r=await fetch(url); if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); }
+async function post(url,body){ const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); }
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+
+// ════════════════════════════════════
+// KEYBOARD SUPPORT
+// ════════════════════════════════════
+document.addEventListener('keydown',e=>{
+  if(document.getElementById('sPin').classList.contains('on')){
+    if(e.key>='0'&&e.key<='9') pa(parseInt(e.key));
+    else if(e.key==='Backspace') pb();
+    else if(e.key==='Enter') ps();
+  }
+});
+
+// Set current year in tax field
+document.getElementById('taxYr').value=new Date().getFullYear();
+</script>
+</body>
+</html>
