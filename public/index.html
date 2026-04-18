@@ -1,0 +1,2499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Woods Landing Time Clock</title>
+<link href="https://fonts.googleapis.com/css2?family=Rye&family=Raleway:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════
+   WOODS LANDING — RUSTIC MODERN DESIGN SYSTEM
+   ═══════════════════════════════════════════ */
+:root{
+  --bark:       #0f0a04;
+  --wood-dark:  #1a1005;
+  --wood-mid:   #241608;
+  --wood-warm:  #2e1e0a;
+  --wood-light: #3d2a0e;
+  --grain:      #4a3218;
+  --cedar:      #6b4c1e;
+  --amber:      #c49a2e;
+  --gold:       #d4a847;
+  --gold-light: #e8c060;
+  --ember:      #e07050;
+  --ember-dark: #a03820;
+  --pine:       #4a8f38;
+  --pine-dark:  #1a3d10;
+  --pine-light: #6dbf5a;
+  --slate:      #7a9ab0;
+  --fog:        #9c8060;
+  --smoke:      #7a6040;
+  --ash:        #c8a870;
+  --radius-sm:  8px;
+  --radius-md:  12px;
+  --radius-lg:  16px;
+  --shadow-sm:  0 2px 8px rgba(0,0,0,.4);
+  --shadow-md:  0 4px 20px rgba(0,0,0,.5);
+  --shadow-lg:  0 8px 40px rgba(0,0,0,.7);
+  --glow-gold:  0 0 20px rgba(212,168,71,.2);
+  --glow-pine:  0 0 20px rgba(74,143,56,.2);
+  --glow-ember: 0 0 20px rgba(224,112,80,.2);
+}
+
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Raleway',sans-serif;}
+
+body{
+  background: var(--bark);
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(74,50,24,.4) 0%, transparent 70%);
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  padding:24px 16px;
+}
+
+/* ── FLOATING PARTICLES ── */
+.particle{
+  position:fixed;
+  border-radius:50%;
+  pointer-events:none;
+  animation:floatUp var(--dur,12s) ease-in-out infinite;
+  opacity:0;
+  background:radial-gradient(circle,rgba(212,168,71,.35) 0%,rgba(212,168,71,0) 70%);
+}
+@keyframes floatUp{
+  0%{transform:translateY(100vh) rotate(0deg);opacity:0;}
+  8%{opacity:.25;}
+  90%{opacity:.25;}
+  100%{transform:translateY(-20vh) rotate(360deg);opacity:0;}
+}
+
+/* ── MAIN CONTAINER ── */
+.wrap{
+  width:100%;
+  max-width:860px;
+  background: linear-gradient(160deg, var(--wood-warm) 0%, var(--wood-mid) 60%, var(--wood-dark) 100%);
+  border-radius: var(--radius-lg);
+  padding: 32px 28px;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(212,168,71,.12), 0 0 0 4px rgba(74,50,24,.6), var(--shadow-lg);
+  border-top: 2px solid rgba(212,168,71,.3);
+  overflow: hidden;
+  animation: containerReveal .8s cubic-bezier(.2,.9,.4,1.1);
+}
+@keyframes containerReveal{
+  from{opacity:0;transform:scale(.96) translateY(24px);}
+  to{opacity:1;transform:none;}
+}
+/* Animated outer border glow */
+.wrap::before{
+  content:'';
+  position:absolute;
+  top:-3px;left:-3px;right:-3px;bottom:-3px;
+  background: linear-gradient(135deg,rgba(212,168,71,.25) 0%,rgba(139,69,19,.5) 50%,rgba(212,168,71,.25) 100%);
+  border-radius: calc(var(--radius-lg) + 3px);
+  z-index:-1;
+  filter:blur(8px);
+  animation: borderGlow 5s ease-in-out infinite;
+}
+@keyframes borderGlow{
+  0%,100%{opacity:.5;filter:blur(8px);}
+  50%{opacity:1;filter:blur(14px);}
+}
+/* Wood grain lines */
+.wrap::after{
+  content:'';
+  position:absolute;
+  inset:0;
+  border-radius: var(--radius-lg);
+  background: repeating-linear-gradient(
+    90deg,
+    transparent,
+    transparent 3px,
+    rgba(139,69,19,.06) 3px,
+    rgba(139,69,19,.06) 7px
+  );
+  pointer-events:none;
+}
+
+.secret-btn{
+  position:absolute;top:14px;right:14px;
+  width:26px;height:26px;
+  background:transparent;border:none;
+  font-size:14px;color:var(--cedar);
+  cursor:pointer;opacity:.2;
+  transition:opacity .3s;
+  z-index:10;
+}
+.secret-btn:hover{opacity:.8;}
+
+/* ── HEADER ── */
+.hdr{text-align:center;margin-bottom:28px;padding-top:4px;}
+.hdr h1{
+  font-family:'Rye',serif;
+  color:var(--gold);
+  font-size:32px;
+  letter-spacing:3px;
+  text-shadow: 0 2px 4px rgba(0,0,0,.6), 0 0 40px rgba(212,168,71,.3);
+  line-height:1.2;
+}
+.hdr p{
+  color:var(--fog);
+  font-size:10px;
+  margin-top:8px;
+  letter-spacing:5px;
+  text-transform:uppercase;
+  font-weight:600;
+}
+.hdr-div{
+  color:transparent !important;
+  background: linear-gradient(90deg, var(--cedar) 0%, var(--amber) 40%, var(--gold-light) 50%, var(--amber) 60%, var(--cedar) 100%);
+  background-size:200% auto;
+  -webkit-background-clip:text;
+  background-clip:text;
+  animation:shimmer 4s linear infinite;
+  font-size:18px;
+  letter-spacing:8px;
+  margin:10px 0;
+  opacity:1 !important;
+}
+
+/* ── MESSAGES ── */
+.msg-box{
+  padding:12px 16px;
+  border-radius:var(--radius-sm);
+  margin-bottom:16px;
+  text-align:center;
+  font-weight:600;
+  font-size:14px;
+  letter-spacing:.3px;
+  animation:msgSlide .3s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes msgSlide{from{transform:translateY(-12px) scale(.97);opacity:0}to{transform:none;opacity:1}}
+.msg-success{
+  background: linear-gradient(135deg, rgba(26,61,16,.9), rgba(45,107,32,.5));
+  color:var(--pine-light);
+  border:1px solid rgba(74,154,56,.4);
+  box-shadow: var(--glow-pine);
+}
+.msg-error{
+  background: linear-gradient(135deg, rgba(61,26,10,.9), rgba(122,48,32,.5));
+  color:var(--ember);
+  border:1px solid rgba(176,74,48,.4);
+  box-shadow: var(--glow-ember);
+}
+
+/* ── SCREENS ── */
+.screen{display:none;}
+.screen.on{display:block;animation:fadeUp .25s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ── PIN PAD ── */
+.pin-display{
+  background:#030201;
+  border:1px solid rgba(212,168,71,.2);
+  border-radius:20px;
+  padding:0;
+  margin-bottom:16px;
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  gap:0;
+  box-shadow: inset 0 2px 16px rgba(0,0,0,.8), 0 4px 20px rgba(0,0,0,.5);
+  position:relative;
+  overflow:hidden;
+}
+#wildlifeCanvas{
+  display:block;
+  width:100%;
+  height:140px;
+  border-bottom:1px solid rgba(212,168,71,.1);
+}
+.pin-dots-row{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:28px;
+  padding:14px 20px 16px;
+  position:relative;
+  z-index:3;
+}
+.pin-dot{
+  width:24px;height:24px;
+  border-radius:50%;
+  border:2px solid var(--cedar);
+  background: radial-gradient(circle at 40% 35%, rgba(74,50,24,.4), rgba(15,10,2,.8));
+  transition:all .15s cubic-bezier(.34,1.56,.64,1);
+  position:relative;
+  z-index:1;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,.6), 0 1px 3px rgba(0,0,0,.4);
+}
+.pin-dot.filled{
+  background: radial-gradient(circle at 35% 30%, var(--gold-light), var(--gold), var(--amber));
+  border-color:var(--gold-light);
+  box-shadow: 0 0 18px rgba(212,168,71,.8), 0 0 6px rgba(212,168,71,.5), inset 0 1px 3px rgba(255,255,255,.4);
+  transform:scale(1.15);
+  animation: pinPulse .4s cubic-bezier(.68,-.55,.265,1.55);
+}
+@keyframes pinPulse{
+  0%{transform:scale(1);}
+  50%{transform:scale(1.45);box-shadow:0 0 32px rgba(212,168,71,1), 0 0 12px rgba(240,198,116,.8);}
+  100%{transform:scale(1.15);}
+}
+.keypad{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  margin-bottom:16px;
+}
+.key{
+  background: linear-gradient(160deg, var(--wood-light) 0%, var(--wood-warm) 100%);
+  border:none;
+  border-radius:var(--radius-md);
+  padding:20px 0;
+  font-size:26px;
+  font-weight:700;
+  color:var(--gold);
+  cursor:pointer;
+  text-align:center;
+  transition:all .08s cubic-bezier(.2,.9,.4,1.1);
+  -webkit-tap-highlight-color:transparent;
+  user-select:none;
+  /* 3D depth effect */
+  box-shadow: 0 8px 0 var(--wood-dark), var(--shadow-sm), inset 0 1px 0 rgba(255,255,255,.1);
+  position:relative;
+  overflow:hidden;
+}
+/* Glass highlight on top of key */
+.key::before{
+  content:'';
+  position:absolute;
+  top:2px;left:10%;
+  width:80%;height:35%;
+  background:radial-gradient(ellipse,rgba(255,255,255,.18) 0%,transparent 70%);
+  border-radius:50%;
+  pointer-events:none;
+}
+/* Shimmer sweep on hover */
+.key::after{
+  content:'';
+  position:absolute;
+  top:0;left:-100%;
+  width:100%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent);
+  transition:left .5s ease;
+  pointer-events:none;
+}
+.key:hover::after{left:100%;}
+.key:active{
+  transform:translateY(6px);
+  box-shadow: 0 2px 0 var(--wood-dark), inset 0 1px 4px rgba(0,0,0,.3);
+}
+.key.clear{
+  background:linear-gradient(160deg,rgba(90,40,20,.9),rgba(61,26,10,.9));
+  color:var(--ember);
+  box-shadow: 0 8px 0 rgba(30,10,5,.8), var(--shadow-sm);
+}
+.key.clear:active{transform:translateY(6px);box-shadow:0 2px 0 rgba(30,10,5,.8);}
+.key.enter{
+  background:linear-gradient(160deg,rgba(50,100,30,.9),rgba(26,61,16,.9));
+  color:var(--pine-light);
+  box-shadow: 0 8px 0 rgba(10,30,8,.8), var(--shadow-sm);
+}
+.key.enter:active{transform:translateY(6px);box-shadow:0 2px 0 rgba(10,30,8,.8);}
+.pin-helper{
+  background:rgba(0,0,0,.25);
+  border:1px solid rgba(74,50,24,.6);
+  padding:14px;
+  border-radius:var(--radius-sm);
+  margin-top:14px;
+}
+.pin-helper strong{color:var(--fog);font-size:12px;letter-spacing:.5px;font-weight:600;}
+.pin-helper table{width:100%;margin-top:8px;}
+.pin-helper td{padding:4px 6px;color:var(--smoke);font-size:12px;line-height:1.6;}
+
+/* ── EMPLOYEE CLOCK SCREEN ── */
+.emp-bar{
+  background: linear-gradient(135deg, rgba(74,50,24,.6) 0%, rgba(36,22,8,.8) 100%);
+  border:1px solid rgba(212,168,71,.2);
+  border-radius:var(--radius-md);
+  padding:18px 20px;
+  text-align:center;
+  margin-bottom:18px;
+  box-shadow: var(--shadow-sm), inset 0 1px 0 rgba(212,168,71,.1);
+  position:relative;
+  overflow:hidden;
+}
+.emp-bar::before{
+  content:'';
+  position:absolute;
+  top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(212,168,71,.4),transparent);
+}
+.emp-bar h2{font-family:'Rye',serif;font-size:22px;color:var(--gold);letter-spacing:1px;}
+.emp-bar p{font-size:11px;color:var(--fog);margin-top:4px;letter-spacing:2px;text-transform:uppercase;font-weight:600;}
+
+.etabs{
+  display:flex;
+  margin-bottom:18px;
+  background:var(--wood-dark);
+  border-radius:var(--radius-sm);
+  padding:4px;
+  border:1px solid rgba(74,50,24,.8);
+  gap:3px;
+}
+.etab{
+  flex:1;text-align:center;
+  padding:10px 6px;
+  font-size:12px;font-weight:700;
+  color:var(--smoke);
+  cursor:pointer;
+  border-radius:6px;
+  transition:all .2s;
+  letter-spacing:.3px;
+  text-transform:uppercase;
+}
+.etab.on{
+  background: linear-gradient(135deg, var(--wood-light), var(--wood-warm));
+  color:var(--gold);
+  box-shadow:var(--shadow-sm);
+  border:1px solid rgba(212,168,71,.15);
+}
+
+.econtent{display:none;}
+.econtent.on{display:block;animation:fadeUp .2s ease;}
+
+/* ── CLOCK BUTTONS ── */
+.clock-btns{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;}
+.cbtn{
+  padding:32px 0;
+  border:none;
+  border-radius:var(--radius-md);
+  font-size:18px;
+  font-weight:700;
+  font-family:'Raleway',sans-serif;
+  letter-spacing:.5px;
+  color:white;
+  cursor:pointer;
+  transition:all .12s cubic-bezier(.2,.9,.4,1.1);
+  -webkit-tap-highlight-color:transparent;
+  position:relative;
+  overflow:hidden;
+}
+/* Glass highlight */
+.cbtn::before{
+  content:'';
+  position:absolute;
+  top:2px;left:8%;
+  width:84%;height:40%;
+  background:radial-gradient(ellipse,rgba(255,255,255,.15) 0%,transparent 70%);
+  border-radius:50%;
+  pointer-events:none;
+  z-index:1;
+}
+/* Shimmer sweep */
+.cbtn::after{
+  content:'';
+  position:absolute;
+  top:0;left:-100%;
+  width:100%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent);
+  transition:left .6s ease;
+  pointer-events:none;
+}
+.cbtn:hover{transform:translateY(-2px);}
+.cbtn:hover::after{left:100%;}
+.cbtn:active{transform:translateY(5px);box-shadow:0 2px 0 rgba(0,0,0,.5)!important;}
+.cbtn-in{
+  background:linear-gradient(150deg, #3a8028, #1e5012, #163d0d);
+  box-shadow: 0 10px 0 #0c2808, var(--shadow-md);
+  text-shadow:0 1px 3px rgba(0,0,0,.5);
+}
+.cbtn-out{
+  background:linear-gradient(150deg, #8a3822, #5a2010, #3d1205);
+  box-shadow: 0 10px 0 #1c0c04, var(--shadow-md);
+  text-shadow:0 1px 3px rgba(0,0,0,.5);
+}
+
+.status-box{
+  background:var(--wood-dark);
+  border-radius:var(--radius-md);
+  padding:16px 18px;
+  border:1px solid rgba(74,50,24,.8);
+  border-left:3px solid var(--cedar);
+  box-shadow:var(--shadow-sm);
+}
+.s-lbl{font-size:9px;color:var(--smoke);text-transform:uppercase;letter-spacing:2px;font-weight:700;}
+.s-val{font-size:22px;font-weight:700;color:var(--gold);margin-top:4px;letter-spacing:.5px;}
+.s-last{margin-top:5px;color:var(--cedar);font-size:12px;}
+
+/* ── TIPS / LOG BOXES ── */
+.tips-box{
+  background: linear-gradient(150deg, rgba(61,32,16,.7), rgba(26,18,8,.9));
+  border:1px solid rgba(139,94,26,.4);
+  border-radius:var(--radius-md);
+  padding:22px 20px;
+  margin-bottom:16px;
+  box-shadow:var(--shadow-md);
+}
+.tips-ttl{
+  font-family:'Rye',serif;
+  font-size:19px;
+  color:var(--gold);
+  text-align:center;
+  margin-bottom:16px;
+  letter-spacing:1px;
+}
+.tips-lbl{
+  display:block;
+  font-size:10px;
+  margin-bottom:5px;
+  color:var(--fog);
+  font-weight:700;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+}
+.tips-inp{
+  width:100%;padding:14px;
+  font-size:24px;
+  border:1px solid rgba(107,76,30,.6);
+  border-radius:var(--radius-sm);
+  text-align:center;
+  font-weight:700;
+  background:rgba(0,0,0,.3);
+  color:var(--gold);
+  transition:border-color .2s, box-shadow .2s;
+  font-family:'Raleway',sans-serif;
+}
+.tips-inp:focus{outline:none;border-color:rgba(212,168,71,.5);box-shadow:0 0 0 3px rgba(212,168,71,.1);}
+.tips-save{
+  background: linear-gradient(135deg, var(--wood-light), var(--wood-warm));
+  color:var(--gold);
+  border:1px solid rgba(212,168,71,.25);
+  padding:15px;
+  font-size:16px;
+  font-weight:700;
+  border-radius:var(--radius-sm);
+  width:100%;
+  cursor:pointer;
+  font-family:'Rye',serif;
+  letter-spacing:1.5px;
+  margin-top:12px;
+  transition:all .2s;
+  box-shadow:var(--shadow-sm);
+}
+.tips-save:active{transform:scale(.98);}
+.tips-total{
+  font-size:17px;font-weight:700;
+  text-align:center;margin-top:12px;
+  padding:11px;
+  background:rgba(0,0,0,.25);
+  border-radius:var(--radius-sm);
+  color:var(--gold);
+  border:1px solid rgba(74,50,24,.4);
+}
+.logout-btn{
+  background:transparent;
+  border:1px solid rgba(74,50,24,.6);
+  color:var(--smoke);
+  padding:12px;
+  border-radius:var(--radius-sm);
+  width:100%;
+  font-size:13px;
+  font-weight:600;
+  margin-top:18px;
+  cursor:pointer;
+  transition:all .2s;
+  letter-spacing:1px;
+  text-transform:uppercase;
+}
+.logout-btn:hover{border-color:var(--cedar);color:var(--fog);}
+
+/* ── ADMIN NAV ── */
+.admin-nav{
+  display:flex;
+  gap:6px;
+  margin-bottom:24px;
+  flex-wrap:wrap;
+  border-bottom:1px solid rgba(74,50,24,.5);
+  padding-bottom:14px;
+}
+.anav{
+  padding:9px 16px;
+  background:rgba(0,0,0,.2);
+  border:1px solid rgba(74,50,24,.5);
+  border-radius:var(--radius-sm);
+  color:var(--smoke);
+  font-size:12px;
+  font-weight:700;
+  cursor:pointer;
+  transition:all .2s;
+  white-space:nowrap;
+  letter-spacing:.3px;
+  text-transform:uppercase;
+}
+.anav:hover{border-color:var(--cedar);color:var(--fog);}
+.anav.on{
+  background:linear-gradient(135deg,var(--wood-light),var(--wood-warm));
+  color:var(--gold);
+  border-color:rgba(212,168,71,.3);
+  box-shadow:var(--shadow-sm);
+}
+
+/* ── ADMIN PANELS ── */
+.apanel{display:none;}
+.apanel.on{display:block;animation:fadeUp .25s ease;}
+
+/* ── ADMIN UI COMPONENTS ── */
+.ph{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px;}
+.ph h2{font-family:'Rye',serif;color:var(--gold);font-size:22px;letter-spacing:1px;}
+.btnrow{display:flex;gap:7px;flex-wrap:wrap;}
+
+.ab{
+  padding:9px 14px;
+  border:none;
+  border-radius:var(--radius-sm);
+  font-size:11px;
+  font-weight:700;
+  cursor:pointer;
+  transition:all .15s cubic-bezier(.2,.9,.4,1.1);
+  letter-spacing:.5px;
+  text-transform:uppercase;
+  box-shadow:var(--shadow-sm);
+  position:relative;
+  overflow:hidden;
+}
+/* Shimmer sweep on hover */
+.ab::after{
+  content:'';
+  position:absolute;
+  top:0;left:-100%;
+  width:100%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);
+  transition:left .4s ease;
+  pointer-events:none;
+}
+.ab:hover::after{left:100%;}
+.ab:hover{transform:translateY(-1px);box-shadow:var(--shadow-md);}
+.ab:active{transform:scale(.96) translateY(0);}
+.ab-blue{background:linear-gradient(135deg,#2d5a8e,#1e3d68);color:#a8c8f0;border:1px solid rgba(45,90,142,.5);}
+.ab-green{background:linear-gradient(135deg,#2d6b20,#1a4010);color:#a8e890;border:1px solid rgba(45,107,32,.5);}
+.ab-amber{background:linear-gradient(135deg,var(--wood-light),var(--wood-warm));color:var(--ash);border:1px solid rgba(107,76,30,.5);}
+.ab-dark{background:rgba(0,0,0,.3);color:var(--fog);border:1px solid rgba(74,50,24,.5);}
+.ab-red{background:linear-gradient(135deg,#7a2020,#4a1010);color:#ffaaaa;border:1px solid rgba(122,32,32,.5);}
+
+/* ── TOGGLE SWITCH ── */
+.tog-wrap{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:10px 14px;
+  background:rgba(0,0,0,.25);
+  border:1px solid rgba(74,50,24,.5);
+  border-radius:var(--radius-sm);
+  margin-bottom:14px;
+}
+.tog-label{ display:flex;flex-direction:column;gap:2px; }
+.tog-label span:first-child{ color:var(--ash);font-size:13px;font-weight:600; }
+.tog-label span:last-child{ color:var(--smoke);font-size:10px;letter-spacing:.3px; }
+.tog{
+  position:relative;width:44px;height:24px;flex-shrink:0;
+  cursor:pointer;
+}
+.tog input{ opacity:0;width:0;height:0;position:absolute; }
+.tog-track{
+  position:absolute;inset:0;
+  border-radius:24px;
+  background:rgba(80,30,10,.8);
+  border:1px solid rgba(120,40,20,.6);
+  transition:all .25s;
+}
+.tog-thumb{
+  position:absolute;
+  top:3px;left:3px;
+  width:17px;height:17px;
+  border-radius:50%;
+  background:var(--ember);
+  transition:all .25s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:0 1px 4px rgba(0,0,0,.4);
+}
+.tog input:checked ~ .tog-track{
+  background:rgba(20,60,14,.9);
+  border-color:rgba(40,100,24,.7);
+}
+.tog input:checked ~ .tog-thumb{
+  left:23px;
+  background:var(--pine-light);
+  box-shadow:0 0 8px rgba(109,191,90,.5);
+}
+/* Inline card toggle */
+.card-tog-wrap{
+  display:flex;align-items:center;gap:8px;
+  padding:7px 10px;
+  background:rgba(0,0,0,.2);
+  border:1px solid rgba(74,50,24,.4);
+  border-radius:var(--radius-sm);
+  margin-top:8px;
+}
+.card-tog-wrap span{
+  font-size:11px;font-weight:600;
+  letter-spacing:.3px;text-transform:uppercase;
+  flex:1;
+}
+.card-tog-status{ font-size:11px;font-weight:700; }
+.loading-spinner{
+  display:inline-block;
+  width:20px;height:20px;
+  border:2px solid rgba(212,168,71,.2);
+  border-top-color:var(--gold);
+  border-radius:50%;
+  animation:spin .7s linear infinite;
+  vertical-align:middle;
+  margin-right:8px;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+.back-lnk{background:none;border:none;color:var(--smoke);font-size:13px;cursor:pointer;text-decoration:underline;padding:0;transition:color .2s;}
+.back-lnk:hover{color:var(--fog);}
+
+.datebar{
+  display:flex;
+  gap:10px;
+  align-items:flex-end;
+  margin-bottom:18px;
+  background:rgba(0,0,0,.2);
+  padding:14px;
+  border-radius:var(--radius-sm);
+  flex-wrap:wrap;
+  border:1px solid rgba(74,50,24,.5);
+}
+.datebar label{color:var(--fog);font-size:9px;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:1.5px;font-weight:700;}
+.datebar input{
+  padding:8px 10px;
+  border:1px solid rgba(107,76,30,.6);
+  border-radius:6px;
+  background:rgba(0,0,0,.3);
+  color:var(--gold);
+  font-size:13px;
+  font-family:'Raleway',sans-serif;
+  transition:border-color .2s;
+}
+.datebar input:focus{outline:none;border-color:rgba(212,168,71,.5);}
+
+/* ── EMPLOYEE CARDS ── */
+.ecard{
+  background: linear-gradient(135deg, rgba(26,16,5,.9) 0%, rgba(20,12,4,.95) 100%);
+  border-radius:var(--radius-md);
+  padding:16px 18px;
+  margin-bottom:12px;
+  border:1px solid rgba(74,50,24,.5);
+  border-left:none;
+  box-shadow:var(--shadow-sm);
+  transition:all .35s cubic-bezier(.2,.9,.4,1.1);
+  position:relative;
+  overflow:hidden;
+}
+/* Sliding left accent bar */
+.ecard::before{
+  content:'';
+  position:absolute;
+  top:0;left:0;
+  width:4px;height:100%;
+  background:linear-gradient(180deg, var(--gold), var(--amber));
+  transition:width .3s ease;
+}
+.ecard:hover{
+  transform:translateX(8px) translateY(-3px);
+  border-color:rgba(212,168,71,.3);
+  box-shadow:var(--shadow-md), -4px 8px 24px rgba(0,0,0,.4);
+}
+.ecard:hover::before{width:6px;}
+.ecard-name{
+  font-family:'Rye',serif;
+  font-size:17px;
+  color:var(--gold);
+  margin-bottom:10px;
+  cursor:pointer;
+  display:inline-block;
+  transition:color .2s;
+  letter-spacing:.5px;
+  padding-left:12px;
+}
+.ecard-name:hover{color:var(--gold-light);}
+.stats3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;}
+.sbox{
+  background:rgba(0,0,0,.25);
+  padding:10px 8px;
+  border-radius:var(--radius-sm);
+  text-align:center;
+  border:1px solid rgba(74,50,24,.4);
+  transition:all .25s cubic-bezier(.2,.9,.4,1.1);
+}
+.sbox:hover{
+  transform:translateY(-4px);
+  border-color:rgba(212,168,71,.35);
+  box-shadow:0 8px 20px -6px rgba(0,0,0,.5);
+}
+.slbl{font-size:9px;color:var(--smoke);text-transform:uppercase;letter-spacing:1px;font-weight:700;}
+.sval{
+  font-size:17px;font-weight:700;margin-top:3px;
+  background:linear-gradient(135deg,var(--gold-light),var(--amber));
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+.card-acts{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px;}
+
+.grand{
+  background: linear-gradient(135deg, rgba(61,42,14,.8), rgba(26,16,5,.9));
+  border:1px solid rgba(212,168,71,.2);
+  color:var(--gold);
+  padding:18px;
+  border-radius:var(--radius-md);
+  margin-top:18px;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  text-align:center;
+  box-shadow:var(--shadow-md), var(--glow-gold);
+  position:relative;
+  overflow:hidden;
+}
+/* Rotating ambient glow inside grand total */
+.grand::before{
+  content:'';
+  position:absolute;
+  top:-50%;left:-50%;
+  width:200%;height:200%;
+  background:radial-gradient(circle,rgba(212,168,71,.08) 0%,transparent 65%);
+  animation:rotateSlow 25s linear infinite;
+  pointer-events:none;
+}
+@keyframes rotateSlow{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+.grand .gv{
+  font-size:24px;font-weight:700;font-family:'Rye',serif;position:relative;
+  background:linear-gradient(135deg,var(--gold-light),var(--amber));
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+.grand .gl{font-size:9px;color:var(--fog);text-transform:uppercase;letter-spacing:1.5px;margin-top:4px;font-weight:600;position:relative;}
+
+/* ── EMPLOYEE PROFILE ── */
+.prof-banner{
+  background: linear-gradient(135deg, rgba(61,42,14,.7), rgba(26,16,5,.9));
+  border:1px solid rgba(212,168,71,.2);
+  padding:22px;
+  border-radius:var(--radius-md);
+  margin-bottom:18px;
+  text-align:center;
+  box-shadow: var(--shadow-md), var(--glow-gold);
+  position:relative;
+  overflow:hidden;
+}
+.prof-banner::before{
+  content:'';
+  position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(212,168,71,.5),transparent);
+}
+.prof-name{font-family:'Rye',serif;font-size:26px;color:var(--gold);letter-spacing:1px;}
+.prof-meta{color:var(--fog);font-size:12px;margin-top:6px;letter-spacing:.5px;}
+.prof-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px;}
+.pstat{
+  background:rgba(0,0,0,.3);
+  border-radius:var(--radius-sm);
+  padding:14px 10px;
+  text-align:center;
+  border:1px solid rgba(74,50,24,.4);
+  transition:all .25s cubic-bezier(.2,.9,.4,1.1);
+}
+.pstat:hover{
+  transform:translateY(-4px);
+  border-color:rgba(212,168,71,.35);
+  box-shadow:0 8px 20px -6px rgba(0,0,0,.5);
+}
+.pstat .pv{
+  font-size:22px;font-weight:700;font-family:'Rye',serif;
+  background:linear-gradient(135deg,var(--gold-light),var(--amber));
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+.pstat .pl{font-size:9px;color:var(--smoke);text-transform:uppercase;letter-spacing:1.5px;margin-top:3px;font-weight:700;}
+
+.sect{
+  background:rgba(0,0,0,.2);
+  border-radius:var(--radius-sm);
+  padding:16px;
+  margin-bottom:12px;
+  border:1px solid rgba(74,50,24,.4);
+}
+.sect h3{
+  font-family:'Rye',serif;
+  color:var(--fog);
+  font-size:12px;
+  margin-bottom:12px;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  padding-bottom:8px;
+  border-bottom:1px solid rgba(74,50,24,.4);
+}
+.ptable{width:100%;border-collapse:collapse;font-size:12px;}
+.ptable th{
+  color:var(--smoke);
+  text-align:left;
+  padding:8px 6px;
+  border-bottom:1px solid rgba(74,50,24,.5);
+  font-size:9px;
+  text-transform:uppercase;
+  letter-spacing:1.5px;
+  font-weight:700;
+}
+.ptable td{padding:8px 6px;border-bottom:1px solid rgba(26,16,5,.8);color:var(--ash);}
+.ptable tr:last-child td{border-bottom:none;}
+.ptable tr:hover td{background:rgba(74,50,24,.15);}
+.tin{color:var(--pine-light);font-weight:600;}
+.tout{color:var(--ember);font-weight:600;}
+
+/* ── TAX PAGE ── */
+.year-row{display:flex;gap:10px;align-items:center;margin-bottom:18px;flex-wrap:wrap;}
+.year-row input{
+  padding:9px 12px;
+  border:1px solid rgba(107,76,30,.6);
+  border-radius:var(--radius-sm);
+  background:rgba(0,0,0,.3);
+  color:var(--gold);
+  font-size:15px;
+  width:90px;
+  font-family:'Raleway',sans-serif;
+}
+.year-grand{
+  background:linear-gradient(135deg,rgba(61,42,14,.8),rgba(26,16,5,.9));
+  border:1px solid rgba(212,168,71,.2);
+  border-radius:var(--radius-md);
+  padding:18px;
+  margin-bottom:18px;
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+  text-align:center;
+  box-shadow:var(--shadow-md);
+}
+.year-grand .yv{font-size:20px;font-weight:700;color:var(--gold);font-family:'Rye',serif;}
+.year-grand .yl{font-size:9px;color:var(--fog);text-transform:uppercase;letter-spacing:1.5px;margin-top:4px;font-weight:600;}
+.tax-card{
+  background:rgba(0,0,0,.2);
+  border-radius:var(--radius-sm);
+  margin-bottom:10px;
+  overflow:hidden;
+  border:1px solid rgba(74,50,24,.4);
+  transition:border-color .2s;
+}
+.tax-card:hover{border-color:rgba(107,76,30,.7);}
+.tax-hdr{
+  padding:14px 16px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  cursor:pointer;
+  transition:background .2s;
+  flex-wrap:wrap;
+  gap:6px;
+}
+.tax-hdr:hover{background:rgba(74,50,24,.2);}
+.tax-empname{font-family:'Rye',serif;color:var(--gold);font-size:15px;letter-spacing:.5px;}
+.tax-summary{color:var(--smoke);font-size:12px;display:flex;gap:12px;flex-wrap:wrap;}
+.tax-summary span{color:var(--ash);}
+.tax-months{display:none;padding:0 16px 16px;}
+.tax-months.open{display:block;}
+.mthgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:7px;}
+.mbox{
+  background:rgba(0,0,0,.25);
+  border-radius:var(--radius-sm);
+  padding:10px;
+  border:1px solid rgba(74,50,24,.35);
+}
+.mbox .mn{font-size:9px;color:var(--smoke);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px;font-weight:700;}
+.mbox .mv{font-size:14px;font-weight:700;color:var(--ash);}
+.mbox .ml{font-size:9px;color:var(--cedar);margin-top:1px;}
+
+/* ── BACKUP ── */
+.backup-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+.bcard{
+  background:rgba(0,0,0,.2);
+  border-radius:var(--radius-sm);
+  padding:18px;
+  border:1px solid rgba(74,50,24,.4);
+  text-align:center;
+}
+.bcard h3{font-family:'Rye',serif;color:var(--fog);font-size:13px;margin-bottom:10px;letter-spacing:.5px;}
+.bcard p{color:var(--cedar);font-size:12px;margin-bottom:12px;line-height:1.6;}
+.bcard-big{
+  background:rgba(0,0,0,.2);
+  border-radius:var(--radius-sm);
+  padding:18px;
+  border:1px solid rgba(74,50,24,.4);
+  margin-bottom:12px;
+}
+.bcard-big h3{font-family:'Rye',serif;color:var(--fog);font-size:14px;margin-bottom:10px;letter-spacing:.5px;}
+.bcard-big p{color:var(--cedar);font-size:12px;line-height:1.7;}
+.bcard-big ul,.bcard-big ol{color:var(--smoke);font-size:12px;padding-left:18px;line-height:2.2;}
+.bcard-big li span{color:var(--ash);}
+#backupLog{
+  background:rgba(0,0,0,.25);
+  border-radius:var(--radius-sm);
+  padding:12px;
+  font-size:12px;
+  color:var(--fog);
+  max-height:220px;
+  overflow-y:auto;
+  border:1px solid rgba(74,50,24,.4);
+}
+#backupLog::-webkit-scrollbar{width:4px;}
+#backupLog::-webkit-scrollbar-track{background:rgba(0,0,0,.2);}
+#backupLog::-webkit-scrollbar-thumb{background:var(--cedar);border-radius:4px;}
+
+/* ── MODALS ── */
+.modal-bg{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.85);
+  backdrop-filter:blur(4px);
+  justify-content:center;
+  align-items:center;
+  z-index:1000;
+}
+.modal-bg.open{display:flex;animation:bgFade .2s ease;}
+@keyframes bgFade{from{opacity:0}to{opacity:1}}
+.modal{
+  background: linear-gradient(160deg, var(--wood-warm), var(--wood-mid));
+  border:1px solid rgba(212,168,71,.2);
+  padding:26px;
+  border-radius:var(--radius-lg);
+  width:92%;
+  max-width:440px;
+  max-height:90vh;
+  overflow-y:auto;
+  box-shadow: 0 0 0 1px rgba(74,50,24,.5), var(--shadow-lg);
+  animation:modalPop .25s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes modalPop{from{transform:scale(.94) translateY(8px);opacity:0}to{transform:none;opacity:1}}
+.modal::-webkit-scrollbar{width:4px;}
+.modal::-webkit-scrollbar-track{background:transparent;}
+.modal::-webkit-scrollbar-thumb{background:var(--cedar);border-radius:4px;}
+.modal h2{
+  font-family:'Rye',serif;
+  color:var(--gold);
+  margin-bottom:20px;
+  font-size:20px;
+  letter-spacing:.5px;
+  padding-bottom:12px;
+  border-bottom:1px solid rgba(74,50,24,.5);
+}
+.modal label{
+  display:block;
+  margin-bottom:4px;
+  font-size:9px;
+  color:var(--fog);
+  text-transform:uppercase;
+  letter-spacing:1.5px;
+  font-weight:700;
+}
+.modal input,.modal select{
+  width:100%;
+  padding:10px 12px;
+  margin-bottom:14px;
+  border:1px solid rgba(107,76,30,.5);
+  border-radius:var(--radius-sm);
+  background:rgba(0,0,0,.3);
+  color:var(--gold);
+  font-size:14px;
+  font-family:'Raleway',sans-serif;
+  transition:border-color .2s, box-shadow .2s;
+}
+.modal input:focus,.modal select:focus{
+  outline:none;
+  border-color:rgba(212,168,71,.5);
+  box-shadow:0 0 0 3px rgba(212,168,71,.08);
+}
+.modal select option{background:var(--wood-warm);}
+.mact{display:flex;gap:9px;justify-content:flex-end;margin-top:8px;}
+.mcancel{
+  padding:10px 18px;
+  border:1px solid rgba(74,50,24,.6);
+  border-radius:var(--radius-sm);
+  background:transparent;
+  color:var(--smoke);
+  cursor:pointer;
+  font-size:13px;
+  font-weight:600;
+  font-family:'Raleway',sans-serif;
+  transition:all .2s;
+}
+.mcancel:hover{border-color:var(--cedar);color:var(--fog);}
+.msave{
+  padding:10px 18px;
+  border:1px solid rgba(212,168,71,.3);
+  border-radius:var(--radius-sm);
+  background:linear-gradient(135deg,var(--wood-light),var(--grain));
+  color:var(--gold);
+  cursor:pointer;
+  font-weight:700;
+  font-size:13px;
+  font-family:'Raleway',sans-serif;
+  transition:all .2s;
+  box-shadow:var(--shadow-sm);
+}
+.msave:hover{box-shadow:var(--shadow-md);}
+.msave:active{transform:scale(.97);}
+
+/* ── SCROLLBAR ── */
+body::-webkit-scrollbar{width:6px;}
+body::-webkit-scrollbar-track{background:var(--bark);}
+body::-webkit-scrollbar-thumb{background:var(--cedar);border-radius:6px;}
+
+/* ── LIVE CLOCK ── */
+#liveClock{
+  font-family:'Raleway',sans-serif;
+  font-size:13px;
+  font-weight:300;
+  color:var(--smoke);
+  letter-spacing:3px;
+  text-align:center;
+  margin-top:6px;
+  font-variant-numeric:tabular-nums;
+  opacity:.8;
+}
+
+/* ── NOISE TEXTURE OVERLAY ── */
+.wrap::after{
+  content:'';
+  position:absolute;
+  inset:0;
+  border-radius:var(--radius-lg);
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+  pointer-events:none;
+  opacity:.6;
+  mix-blend-mode:overlay;
+}
+
+/* ── AMBIENT BREATHING GLOW ── */
+@keyframes breathe{
+  0%,100%{box-shadow:0 0 0 1px rgba(212,168,71,.1), 0 0 0 4px rgba(74,50,24,.6), 0 8px 40px rgba(0,0,0,.7), 0 0 80px rgba(212,168,71,.03);}
+  50%{box-shadow:0 0 0 1px rgba(212,168,71,.18), 0 0 0 4px rgba(74,50,24,.6), 0 8px 40px rgba(0,0,0,.7), 0 0 120px rgba(212,168,71,.07);}
+}
+.wrap{ animation: breathe 6s ease-in-out infinite; }
+
+/* ── RIPPLE ── */
+.ripple-host{position:relative;overflow:hidden;}
+@keyframes rippleAnim{
+  to{transform:scale(4);opacity:0;}
+}
+.ripple{
+  position:absolute;
+  border-radius:50%;
+  width:60px;height:60px;
+  margin:-30px;
+  background:rgba(255,255,255,.18);
+  transform:scale(0);
+  animation:rippleAnim .5s linear;
+  pointer-events:none;
+}
+
+/* ── PARTICLE CANVAS ── */
+#particleCanvas{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:9999;
+}
+
+/* ── STATUS PULSE ── */
+@keyframes statusPulse{
+  0%,100%{opacity:1;}
+  50%{opacity:.6;}
+}
+.status-clocked-in .s-val{
+  animation:statusPulse 2.5s ease-in-out infinite;
+  color:var(--pine-light);
+}
+.status-dot{
+  display:inline-block;
+  width:8px;height:8px;
+  border-radius:50%;
+  margin-right:8px;
+  vertical-align:middle;
+  position:relative;
+}
+.status-dot::after{
+  content:'';
+  position:absolute;
+  inset:-3px;
+  border-radius:50%;
+  animation:pingAnim 1.5s cubic-bezier(0,0,.2,1) infinite;
+}
+.dot-in{background:var(--pine-light);}
+.dot-in::after{background:rgba(109,191,90,.4);}
+.dot-out{background:var(--ember);}
+.dot-out::after{background:rgba(224,112,80,.4);}
+@keyframes pingAnim{
+  75%,100%{transform:scale(2.2);opacity:0;}
+}
+
+/* ── HEADER SHIMMER ── */
+@keyframes shimmer{
+  0%{background-position:-200% center;}
+  100%{background-position:200% center;}
+}
+.hdr-div{
+  color:transparent !important;
+  background: linear-gradient(90deg, var(--cedar) 0%, var(--amber) 40%, var(--gold-light) 50%, var(--amber) 60%, var(--cedar) 100%);
+  background-size:200% auto;
+  -webkit-background-clip:text;
+  background-clip:text;
+  animation:shimmer 4s linear infinite;
+  font-size:18px;
+  letter-spacing:8px;
+  margin:10px 0;
+  opacity:1 !important;
+}
+
+/* ── CARD STAGGER ANIMATIONS ── */
+@keyframes cardIn{
+  from{opacity:0;transform:translateY(16px);}
+  to{opacity:1;transform:none;}
+}
+.ecard{animation:cardIn .35s ease both;}
+.ecard:nth-child(1){animation-delay:.05s;}
+.ecard:nth-child(2){animation-delay:.10s;}
+.ecard:nth-child(3){animation-delay:.15s;}
+.ecard:nth-child(4){animation-delay:.20s;}
+.ecard:nth-child(5){animation-delay:.25s;}
+.ecard:nth-child(6){animation-delay:.30s;}
+.ecard:nth-child(7){animation-delay:.35s;}
+.ecard:nth-child(8){animation-delay:.40s;}
+
+/* ── BUTTON HOVER LIFT ── */
+.cbtn{transition:all .18s cubic-bezier(.34,1.56,.64,1);}
+.cbtn:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,.5);}
+.cbtn:active{transform:scale(.96) translateY(0);}
+
+.ab{transition:all .15s cubic-bezier(.34,1.56,.64,1);}
+.ab:hover{transform:translateY(-1px);}
+.ab:active{transform:scale(.96) translateY(0);}
+
+/* ── KEY PRESS GLOW ── */
+.key{transition:all .1s;}
+.key:hover{border-color:rgba(212,168,71,.4);box-shadow:var(--shadow-sm),0 0 12px rgba(212,168,71,.08);}
+
+/* ── TOAST NOTIFICATION ── */
+#toastContainer{
+  position:fixed;
+  bottom:24px;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:10000;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
+  pointer-events:none;
+}
+.toast{
+  background:linear-gradient(135deg,rgba(36,22,8,.97),rgba(26,16,5,.97));
+  border:1px solid rgba(212,168,71,.25);
+  border-radius:30px;
+  padding:12px 22px;
+  font-size:14px;
+  font-weight:600;
+  color:var(--ash);
+  box-shadow:0 8px 32px rgba(0,0,0,.6),0 0 0 1px rgba(74,50,24,.4);
+  backdrop-filter:blur(12px);
+  white-space:nowrap;
+  animation:toastIn .4s cubic-bezier(.34,1.56,.64,1);
+  letter-spacing:.3px;
+}
+.toast.out{animation:toastOut .3s ease forwards;}
+.toast.success{border-color:rgba(74,154,56,.4);color:var(--pine-light);}
+.toast.error{border-color:rgba(176,74,48,.4);color:var(--ember);}
+@keyframes toastIn{from{opacity:0;transform:translateY(16px) scale(.9);}to{opacity:1;transform:none;}}
+@keyframes toastOut{to{opacity:0;transform:translateY(8px) scale(.95);}}
+
+@keyframes shake{
+  0%,100%{transform:translateX(0);}
+  20%{transform:translateX(-8px);}
+  40%{transform:translateX(8px);}
+  60%{transform:translateX(-5px);}
+  80%{transform:translateX(5px);}
+}
+.pin-display.shake{animation:shake .4s ease;}
+
+/* ── EMPLOYEE BAR GLOW ON LOGIN ── */
+@keyframes empBarReveal{
+  from{opacity:0;transform:scale(.97);}
+  to{opacity:1;transform:none;}
+}
+.emp-bar{animation:empBarReveal .4s cubic-bezier(.34,1.56,.64,1);}
+
+/* ── SCROLLBAR ── */
+body::-webkit-scrollbar{width:6px;}
+body::-webkit-scrollbar-track{background:var(--bark);}
+body::-webkit-scrollbar-thumb{background:var(--cedar);border-radius:6px;}
+
+/* ── RESPONSIVE ── */
+@media(max-width:480px){
+  .wrap{padding:20px 16px;}
+  .stats3,.prof-stats{grid-template-columns:1fr 1fr;}
+  .grand{grid-template-columns:1fr;}
+  .year-grand{grid-template-columns:1fr 1fr;}
+  .backup-grid{grid-template-columns:1fr;}
+  .hdr h1{font-size:26px;}
+  .cbtn{padding:26px 0;font-size:16px;}
+  .modal{padding:20px;}
+}
+</style>
+</head>
+<body>
+<canvas id="particleCanvas"></canvas>
+<div id="toastContainer"></div>
+<div id="bgParticles"></div>
+<div class="wrap">
+<button class="secret-btn" onclick="goAdminLogin()" title="Admin">🦌</button>
+<div id="MSG" class="msg-box" style="display:none"></div>
+
+<!-- ══════════════ SCREEN: PIN ══════════════ -->
+<div id="sPin" class="screen on">
+  <div class="hdr">
+    <h1>🌲 Woods Landing 🌲</h1>
+    <div class="hdr-div">—⸻—</div>
+    <p>Time Clock</p>
+    <div id="liveClock"></div>
+  </div>
+  <div class="pin-display">
+    <canvas id="wildlifeCanvas" height="140"></canvas>
+    <div class="pin-dots-row">
+      <div class="pin-dot" id="d0"></div>
+      <div class="pin-dot" id="d1"></div>
+      <div class="pin-dot" id="d2"></div>
+      <div class="pin-dot" id="d3"></div>
+    </div>
+  </div>
+  <div class="keypad">
+    <div class="key" onclick="pa(1)">1</div><div class="key" onclick="pa(2)">2</div><div class="key" onclick="pa(3)">3</div>
+    <div class="key" onclick="pa(4)">4</div><div class="key" onclick="pa(5)">5</div><div class="key" onclick="pa(6)">6</div>
+    <div class="key" onclick="pa(7)">7</div><div class="key" onclick="pa(8)">8</div><div class="key" onclick="pa(9)">9</div>
+    <div class="key clear" onclick="pb()">⌫</div><div class="key" onclick="pa(0)">0</div>
+    <div class="key enter" onclick="ps()">✓</div>
+  </div>
+  <div class="pin-helper">
+    <strong>Employee PINs:</strong>
+    <table id="pinTable"><tr><td colspan="2">Loading...</td></tr></table>
+  </div>
+</div>
+
+<!-- ══════════════ SCREEN: EMPLOYEE CLOCK ══════════════ -->
+<div id="sClock" class="screen">
+  <div class="emp-bar"><h2 id="empNm"></h2><p id="empRl"></p></div>
+  <div class="etabs">
+    <div class="etab on" onclick="etab('time')" id="ET-time">⏰ Time</div>
+    <div class="etab" onclick="etab('log')" id="ET-log">✏️ Log Hours</div>
+    <div class="etab" onclick="etab('tips')" id="ET-tips">💰 Tips</div>
+  </div>
+  <div id="EC-time" class="econtent on">
+    <div class="clock-btns">
+      <button class="cbtn cbtn-in ripple-host" onclick="punch('in')">▶ Clock In</button>
+      <button class="cbtn cbtn-out ripple-host" onclick="punch('out')">◼ Clock Out</button>
+    </div>
+    <div class="status-box">
+      <div class="s-lbl">Current Status</div>
+      <div id="statusVal" class="s-val">—</div>
+      <div id="statusLast" class="s-last"></div>
+    </div>
+  </div>
+  <div id="EC-log" class="econtent">
+    <div class="tips-box" style="background:linear-gradient(135deg,#0e2a1a,#0a1f12);border-color:#2d6b20">
+      <div class="tips-ttl" style="color:#6dbf5a">✏️ Log a Missed Shift</div>
+      <p style="color:#9c7a3c;font-size:12px;text-align:center;margin-bottom:16px">Forgot to clock in? Pick your date and times below.</p>
+
+      <!-- Date picker: Previous 14 days as a scrollable list -->
+      <label class="tips-lbl">Date</label>
+      <select id="logDate" style="width:100%;padding:13px;font-size:16px;border:2px solid #2d6b20;border-radius:8px;background:#1a1208;color:#d4a847;margin-bottom:12px" onchange="updateLogCalc()"></select>
+
+      <!-- Time pickers: Hour + Minute + AM/PM dropdowns -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+        <div>
+          <label class="tips-lbl">Clock In</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px">
+            <select id="logInHr" style="padding:11px 4px;font-size:15px;border:2px solid #2d6b20;border-radius:8px;background:#1a1208;color:#d4a847;text-align:center" onchange="updateLogCalc()"></select>
+            <select id="logInMin" style="padding:11px 4px;font-size:15px;border:2px solid #2d6b20;border-radius:8px;background:#1a1208;color:#d4a847;text-align:center" onchange="updateLogCalc()"></select>
+            <select id="logInAmPm" style="padding:11px 4px;font-size:15px;border:2px solid #2d6b20;border-radius:8px;background:#1a1208;color:#d4a847;text-align:center" onchange="updateLogCalc()">
+              <option>AM</option><option>PM</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="tips-lbl">Clock Out</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px">
+            <select id="logOutHr" style="padding:11px 4px;font-size:15px;border:2px solid #2d6b20;border-radius:8px;background:#1a1208;color:#d4a847;text-align:center" onchange="updateLogCalc()"></select>
+            <select id="logOutMin" style="padding:11px 4px;font-size:15px;border:2px solid #2d6b20;border-radius:8px;background:#1a1208;color:#d4a847;text-align:center" onchange="updateLogCalc()"></select>
+            <select id="logOutAmPm" style="padding:11px 4px;font-size:15px;border:2px solid #2d6b20;border-radius:8px;background:#1a1208;color:#d4a847;text-align:center" onchange="updateLogCalc()">
+              <option>AM</option><option selected>PM</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div id="logRoleWrap" style="margin-bottom:12px;display:none">
+        <label class="tips-lbl">Role</label>
+        <div id="logRoleBtns" style="display:grid;gap:8px;"></div>
+      </div>
+      <input type="hidden" id="logRole">
+      <input type="hidden" id="logRoleRate">
+
+      <div id="logCalc" style="background:rgba(0,0,0,.3);border-radius:8px;padding:10px;text-align:center;margin-bottom:12px;display:none">
+        <span id="logCalcText" style="color:#d4a847;font-size:15px;font-weight:bold"></span>
+      </div>
+
+      <button class="tips-save" style="background:linear-gradient(135deg,#2d6b20,#1a3d10);border-color:#4a9a38;color:white" onclick="submitManualHours()">✅ Submit Hours</button>
+      <div id="logResult" style="margin-top:10px;text-align:center;font-size:13px;color:#6dbf5a;display:none"></div>
+    </div>
+  </div>
+  <div id="EC-tips" class="econtent">
+    <div class="tips-box">
+      <div class="tips-ttl">💰 Report Your Tips</div>
+      <label class="tips-lbl">Total Tips ($)</label>
+      <input type="number" id="tipsAmt" class="tips-inp" placeholder="0.00" step="0.01" min="0">
+      <button class="tips-save" onclick="saveTips()">Save Tips</button>
+      <div class="tips-total" id="tipsTtl">Today's Tips: $0.00</div>
+    </div>
+  </div>
+  <button class="logout-btn" onclick="doLogout()">🚪 Log Out</button>
+</div>
+
+<!-- ══════════════ SCREEN: ADMIN ══════════════ -->
+<div id="sAdmin" class="screen">
+  <div class="admin-nav">
+    <div class="anav on" id="AN-dash" onclick="aNav('dash')">📊 Dashboard</div>
+    <div class="anav" id="AN-allemps" onclick="aNav('allemps')">👥 All Employees</div>
+    <div class="anav" id="AN-tax" onclick="aNav('tax')">📋 Tax Info</div>
+    <div class="anav" id="AN-profile" onclick="aNav('profile')" style="display:none">👤 Profile</div>
+    <div class="anav" id="AN-backup" onclick="aNav('backup')">💾 Backup</div>
+    <div class="anav" style="margin-left:auto" onclick="doLogout()">🚪 Logout</div>
+  </div>
+
+  <!-- PANEL: DASHBOARD -->
+  <div id="AP-dash" class="apanel on">
+    <div class="ph">
+      <h2>🦌 Manager Dashboard</h2>
+      <div class="btnrow">
+        <button class="ab ab-blue" onclick="openModal('mAddEmp')">➕ Add Employee</button>
+        <button class="ab ab-green" onclick="emailReport()">📧 Email</button>
+        <button class="ab ab-amber" onclick="downloadCSV()">📊 CSV</button>
+        <button class="ab ab-dark" onclick="printReport()">🖨️ Print</button>
+      </div>
+    </div>
+    <div class="datebar">
+      <div><label>From</label><input type="date" id="dS" onchange="loadDash()"></div>
+      <div><label>To</label><input type="date" id="dE" onchange="loadDash()"></div>
+      <button class="ab ab-amber" onclick="rng('week')">This Week</button>
+      <button class="ab ab-amber" onclick="rng('2weeks')">2 Weeks</button>
+      <button class="ab ab-amber" onclick="rng('month')">Month</button>
+      <button class="ab ab-amber" onclick="rng('6months')">6 Months</button>
+      <button class="ab ab-amber" onclick="rng('year')">Year</button>
+    </div>
+    <div id="dashContent"><p style="color:#6b4c1e;text-align:center;padding:20px">Select a date range above.</p></div>
+  </div>
+
+  <!-- PANEL: ALL EMPLOYEES -->
+  <div id="AP-allemps" class="apanel">
+    <div class="ph">
+      <h2>👥 All Employees</h2>
+      <div class="btnrow">
+        <button class="ab ab-blue" onclick="openModal('mAddEmp')">➕ Add Employee</button>
+      </div>
+    </div>
+    <div id="allEmpsContent"><p style="color:#6b4c1e;text-align:center;padding:20px">Loading...</p></div>
+  </div>
+
+  <!-- PANEL: TAX INFO -->
+  <div id="AP-tax" class="apanel">
+    <div class="ph">
+      <h2>📋 Tax Info</h2>
+      <div class="btnrow"><button class="ab ab-dark" onclick="printTax()">🖨️ Print / PDF</button></div>
+    </div>
+    <div class="year-row">
+      <label style="color:#9c7a3c;font-size:13px">Year:</label>
+      <input type="number" id="taxYr" min="2020" max="2099">
+      <button class="ab ab-amber" onclick="loadTax()">Load</button>
+    </div>
+    <div id="taxContent"><p style="color:#6b4c1e;text-align:center;padding:20px">Enter a year and click Load.</p></div>
+  </div>
+
+  <!-- PANEL: EMPLOYEE PROFILE -->
+  <div id="AP-profile" class="apanel">
+    <div class="ph">
+      <h2 id="profTitle">Employee Profile</h2>
+      <div class="btnrow"><button class="ab ab-dark" onclick="printProf()">🖨️ Print</button></div>
+    </div>
+    <div class="datebar">
+      <div><label>From</label><input type="date" id="pS" onchange="loadProf()"></div>
+      <div><label>To</label><input type="date" id="pE" onchange="loadProf()"></div>
+      <button class="ab ab-amber" onclick="prng('week')">Week</button>
+      <button class="ab ab-amber" onclick="prng('month')">Month</button>
+      <button class="ab ab-amber" onclick="prng('6months')">6 Months</button>
+      <button class="ab ab-amber" onclick="prng('year')">Year</button>
+    </div>
+    <div id="profContent"><p style="color:#6b4c1e;text-align:center;padding:20px">Loading...</p></div>
+    <div style="text-align:center;margin-top:14px">
+      <button class="back-lnk" onclick="aNav('dash')">← Back to Dashboard</button>
+    </div>
+  </div>
+
+  <!-- PANEL: BACKUP -->
+  <div id="AP-backup" class="apanel">
+    <div class="ph"><h2>💾 Data Backup</h2></div>
+    <div class="bcard-big">
+      <h3>🛡️ 3-Layer Data Protection</h3>
+      <p>Your data is protected three ways simultaneously:</p>
+      <ul>
+        <li><span>Layer 1 — PostgreSQL Database</span> — Render keeps your data even through restarts and deploys</li>
+        <li><span>Layer 2 — Weekly Email Backup</span> — Full JSON + report emailed to you every Sunday 11pm</li>
+        <li><span>Layer 3 — Daily Google Drive</span> — Full JSON + CSV uploaded to your Drive folder every night at 2am</li>
+      </ul>
+    </div>
+
+    <div class="bcard-big" style="border-color:#8b5e1a">
+      <h3>☁️ Google Drive — Daily Automatic Backup</h3>
+      <p>Every night at 2am, the system uploads two files to your Google Drive folder:</p>
+      <ul>
+        <li><span>woods-landing-fullbackup-DATE.json</span> — complete database snapshot</li>
+        <li><span>woods-landing-daily-DATE.csv</span> — that day's clock-ins and outs</li>
+      </ul>
+      <p style="margin-top:10px;color:#9c7a3c"><strong>One-time setup (5 minutes):</strong></p>
+      <ol style="color:#6b4c1e;font-size:12px;padding-left:18px;line-height:2.2">
+        <li>Go to <span style="color:#d4a847">console.cloud.google.com</span> → New Project</li>
+        <li>Enable <span style="color:#d4a847">Google Drive API</span></li>
+        <li>Go to IAM → Service Accounts → Create → Download JSON key</li>
+        <li>Create a folder in your Google Drive, share it with the service account email</li>
+        <li>In Render environment variables, add:<br>
+          &nbsp;&nbsp;<span style="color:#d4a847">GOOGLE_SERVICE_ACCOUNT_JSON</span> = paste the entire JSON key file content<br>
+          &nbsp;&nbsp;<span style="color:#d4a847">GOOGLE_DRIVE_FOLDER_ID</span> = the ID at the end of your folder's URL
+        </li>
+      </ol>
+      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="ab ab-green" onclick="triggerDriveBackup()">☁️ Run Drive Backup Now</button>
+        <button class="ab ab-amber" onclick="downloadCSV()">📊 Download CSV</button>
+      </div>
+    </div>
+
+    <div class="backup-grid">
+      <div class="bcard">
+        <h3>📥 Manual JSON Backup</h3>
+        <p>Download a full JSON export of all data right now.</p>
+        <button class="ab ab-green" onclick="doManualBackup()">Download Backup</button>
+      </div>
+      <div class="bcard">
+        <h3>📧 Email Now</h3>
+        <p>Send a backup email immediately without waiting for Sunday.</p>
+        <button class="ab ab-blue" onclick="sendBackupEmail()">Send Email Now</button>
+      </div>
+    </div>
+    <div class="bcard-big" style="border-color:#7a2020;margin-top:4px">
+      <h3 style="color:#e07050">⚠️ Clear Data</h3>
+      <p style="margin-bottom:12px">Use this before a test run to wipe clock-in history. <strong style="color:#e07050">Cannot be undone.</strong></p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="ab ab-amber" onclick="resetData(true)">🗑️ Clear Punches & Tips Only</button>
+        <button class="ab ab-red" onclick="resetData(false)">💥 Full Reset (clears everything)</button>
+      </div>
+    </div>
+
+    <div class="bcard-big">
+      <h3>📋 Backup Log</h3>
+      <p style="font-size:11px;margin-bottom:8px">Every backup — manual, daily Drive, and weekly email — is logged here automatically.</p>
+      <div id="backupLog">Loading...</div>
+    </div>
+  </div>
+</div><!-- end sAdmin -->
+
+<!-- ══════════════ MODALS ══════════════ -->
+<div id="mAddEmp" class="modal-bg">
+  <div class="modal">
+    <h2>Add Employee</h2>
+    <label>Full Name</label><input type="text" id="nName" placeholder="e.g. Jane">
+    <label>4-Digit PIN</label><input type="text" id="nPin" maxlength="4" placeholder="e.g. 9999">
+    <label>Hourly Rate ($)</label><input type="number" id="nRate" step="0.25" placeholder="15.00">
+    <div class="mact">
+      <button class="mcancel" onclick="closeModal('mAddEmp')">Cancel</button>
+      <button class="msave" onclick="addEmp()">Add</button>
+    </div>
+  </div>
+</div>
+
+<div id="mManage" class="modal-bg">
+  <div class="modal">
+    <h2 id="mngTitle">Manage Employee</h2>
+    <input type="hidden" id="mngId">
+    <label>Name</label><input type="text" id="mngName">
+    <label>Hourly Rate ($)</label><input type="number" id="mngRate" step="0.25">
+    <label>Pay Period</label>
+    <select id="mngPay">
+      <option value="weekly">Weekly</option>
+      <option value="biweekly">Bi-Weekly</option>
+      <option value="monthly">Monthly</option>
+    </select>
+    <label>New PIN (leave blank to keep current)</label>
+    <input type="text" id="mngPin" maxlength="4" placeholder="Leave blank to keep">
+    <label>Status</label>
+    <select id="mngActive"><option value="1">Active</option><option value="0">Inactive</option></select>
+    <div class="mact">
+      <button class="mcancel" onclick="closeModal('mManage')">Cancel</button>
+      <button class="msave" onclick="saveManage()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Role Selector Modal (employee clock-in/out) -->
+<div id="mRoleSelect" class="modal-bg">
+  <div class="modal">
+    <h2 id="roleSelectTitle">Select Your Role</h2>
+    <p style="color:#9c7a3c;font-size:13px;margin-bottom:14px">What role are you working today?</p>
+    <div id="roleOptions" style="display:grid;gap:10px;"></div>
+    <div class="mact" style="margin-top:14px">
+      <button class="mcancel" onclick="closeModal('mRoleSelect')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Admin: Edit Punch Modal -->
+<div id="mEditPunch" class="modal-bg">
+  <div class="modal">
+    <h2>Edit Punch</h2>
+    <input type="hidden" id="epId">
+    <label>Type</label>
+    <select id="epType">
+      <option value="in">Clock In</option>
+      <option value="out">Clock Out</option>
+      <option value="break_start">Break Start</option>
+      <option value="break_end">Break End</option>
+    </select>
+    <label>Date & Time</label>
+    <input type="datetime-local" id="epTime">
+    <label>Role (optional)</label>
+    <input type="text" id="epRole" placeholder="e.g. Serving">
+    <div class="mact">
+      <button class="mcancel" onclick="closeModal('mEditPunch')">Cancel</button>
+      <button class="ab ab-red" style="padding:9px 17px;border-radius:6px;font-weight:bold" onclick="deletePunch()">🗑️ Delete</button>
+      <button class="msave" onclick="saveEditPunch()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Admin: Add Punch Modal -->
+<div id="mAddPunch" class="modal-bg">
+  <div class="modal">
+    <h2 id="addPunchTitle">Add Punch</h2>
+    <input type="hidden" id="apEmpId">
+    <label>Type</label>
+    <select id="apType">
+      <option value="in">Clock In</option>
+      <option value="out">Clock Out</option>
+      <option value="break_start">Break Start</option>
+      <option value="break_end">Break End</option>
+    </select>
+    <label>Date & Time</label>
+    <input type="datetime-local" id="apTime">
+    <label>Role (optional)</label>
+    <input type="text" id="apRole" placeholder="e.g. Serving">
+    <div class="mact">
+      <button class="mcancel" onclick="closeModal('mAddPunch')">Cancel</button>
+      <button class="msave" onclick="saveAddPunch()">Add Punch</button>
+    </div>
+  </div>
+</div>
+
+<!-- Admin: Manage Roles Modal -->
+<div id="mRoles" class="modal-bg">
+  <div class="modal">
+    <h2 id="rolesTitle">Manage Roles</h2>
+    <input type="hidden" id="rolesEmpId">
+    <div id="rolesList" style="margin-bottom:14px;"></div>
+    <div style="background:#1a1208;border:1px solid #3d2a0a;border-radius:8px;padding:12px;margin-bottom:4px">
+      <div style="color:#9c7a3c;font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Add New Role</div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <input type="text" id="newRoleName" placeholder="Role name (e.g. Server)" style="flex:2;min-width:100px;padding:9px;border:1px solid #6b4c1e;border-radius:6px;background:#2a1f0e;color:#d4a847;font-size:14px">
+        <div style="display:flex;align-items:center;gap:4px;flex:1;min-width:90px">
+          <span style="color:#9c7a3c;font-size:13px">$</span>
+          <input type="number" id="newRoleRate" placeholder="Rate" step="0.25" min="0" style="width:100%;padding:9px;border:1px solid #6b4c1e;border-radius:6px;background:#2a1f0e;color:#d4a847;font-size:14px">
+        </div>
+        <button class="msave" onclick="addRole()" style="white-space:nowrap">Add</button>
+      </div>
+    </div>
+    <div class="mact" style="margin-top:14px">
+      <button class="mcancel" onclick="closeModal('mRoles')">Done</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════
+//  WEBHOOK URL – CHANGE THIS TO YOUR ACTUAL APPS SCRIPT URL
+// ════════════════════════════════════
+const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbw1qPHhBLbQOMHj5PoD_4MxKxZMOwCDtv8MKkdoA-V0D1NaNhDSpvgFXraCrs1LDONV/exec';
+
+async function callWebhook(action, payload = {}) {
+    const res = await fetch(WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, ...payload })
+    });
+    const json = await res.json();
+    if (!json.success) throw new Error(json.data || 'Webhook error');
+    return json.data;
+}
+
+// ════════════════════════════════════
+// STATE
+// ════════════════════════════════════
+let PIN='', empId=null, empRole='', profileId=null, profName='', refreshT=null, pendingPunchType=null;
+const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+// ════════════════════════════════════
+// SCREEN SWITCHER — simple, no conflicts
+// ════════════════════════════════════
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(el=>el.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+}
+
+// ════════════════════════════════════
+// MESSAGE BOX
+// ════════════════════════════════════
+let msgTimer=null;
+function msg(text,type){
+  const el=document.getElementById('MSG');
+  el.textContent=text;
+  el.className='msg-box msg-'+type;
+  el.style.display='block';
+  if(msgTimer) clearTimeout(msgTimer);
+  msgTimer=setTimeout(()=>{ el.style.display='none'; },3500);
+  if(typeof toast==='function') toast(text,type);
+}
+
+// ════════════════════════════════════
+// PIN PAD
+// ════════════════════════════════════
+function pa(n){
+  if(PIN.length>=4) return;
+  PIN+=n; dots();
+  if(PIN.length===4) setTimeout(ps,180);
+}
+function pb(){ PIN=PIN.slice(0,-1); dots(); }
+function dots(){ for(let i=0;i<4;i++) document.getElementById('d'+i).classList.toggle('filled',i<PIN.length); }
+
+async function ps(){
+  if(PIN.length!==4){ msg('Enter your 4-digit PIN','error'); return; }
+  try{
+    const employees = await callWebhook('employees');
+    const emp = employees.find(e => e.active && e.pin === PIN);
+    if(emp){
+      empId=emp.id; empRole=emp.role;
+      if(empRole==='admin'){
+        showScreen('sAdmin');
+        aNav('dash');
+        loadAllEmps();
+        loadDash();
+        toast('Welcome back, Manager 🦌','success');
+      } else {
+        document.getElementById('empNm').textContent=emp.name;
+        document.getElementById('empRl').textContent='👤 Employee';
+        const logTab=document.getElementById('ET-log');
+        if(logTab) logTab.style.display='block';
+        showScreen('sClock');
+        msg(`Welcome, ${emp.name}! 🌲`,'success');
+        loadStatus(); loadTodayTips();
+        refreshT=setInterval(loadStatus,30000);
+      }
+    } else {
+      const pinDisplay = document.querySelector('.pin-display');
+      if(pinDisplay) pinDisplay.classList.add('shake');
+      setTimeout(()=>pinDisplay?.classList.remove('shake'),500);
+      msg('Invalid PIN','error');
+    }
+    PIN=''; dots();
+  }catch(e){ msg('Connection error: '+e.message,'error'); }
+}
+
+// ════════════════════════════════════
+// EMPLOYEE ACTIONS
+// ════════════════════════════════════
+function etab(t){
+  document.querySelectorAll('.etab').forEach(e=>e.classList.remove('on'));
+  document.querySelectorAll('.econtent').forEach(e=>e.classList.remove('on'));
+  document.getElementById('ET-'+t).classList.add('on');
+  document.getElementById('EC-'+t).classList.add('on');
+  if(t==='tips') loadTodayTips();
+  if(t==='log') initLogForm();
+}
+
+async function initLogForm(){
+  const dateSel=document.getElementById('logDate');
+  dateSel.innerHTML='';
+  const now=new Date();
+  for(let i=0;i<14;i++){
+    const d=new Date(now); d.setDate(now.getDate()-i);
+    const iso=fmt(d);
+    const label=i===0?`Today — ${mtFormat(d,{weekday:'short',month:'short',day:'numeric'})}`:
+                i===1?`Yesterday — ${mtFormat(d,{weekday:'short',month:'short',day:'numeric'})}`:
+                mtFormat(d,{weekday:'short',month:'short',day:'numeric'});
+    const opt=document.createElement('option');
+    opt.value=iso; opt.textContent=label;
+    dateSel.appendChild(opt);
+  }
+
+  ['logInHr','logOutHr'].forEach((id,idx)=>{
+    const sel=document.getElementById(id);
+    sel.innerHTML='';
+    for(let h=1;h<=12;h++){
+      const opt=document.createElement('option');
+      opt.value=h; opt.textContent=h;
+      sel.appendChild(opt);
+    }
+    sel.value=idx===0?8:4;
+  });
+
+  ['logInMin','logOutMin'].forEach(id=>{
+    const sel=document.getElementById(id);
+    sel.innerHTML='';
+    ['00','15','30','45'].forEach(m=>{
+      const opt=document.createElement('option');
+      opt.value=m; opt.textContent=m;
+      sel.appendChild(opt);
+    });
+    sel.value='00';
+  });
+
+  document.getElementById('logInAmPm').value='AM';
+  document.getElementById('logOutAmPm').value='PM';
+
+  document.getElementById('logRole').value='';
+  document.getElementById('logRoleRate').value='';
+  document.getElementById('logCalc').style.display='none';
+  document.getElementById('logResult').style.display='none';
+
+  try{
+    const d=await callWebhook('myRoles', { employeeId: empId });
+    const wrap=document.getElementById('logRoleWrap');
+    const btns=document.getElementById('logRoleBtns');
+    btns.innerHTML='';
+    if(d && d.length>0){
+      wrap.style.display='block';
+      d.forEach(role=>{
+        const btn=document.createElement('button');
+        btn.style.cssText='width:100%;background:#1a2a10;border:2px solid #3d5a20;color:#9cc878;padding:12px 14px;font-size:14px;border-radius:8px;cursor:pointer;text-align:left;display:flex;justify-content:space-between;align-items:center;transition:all .15s;';
+        btn.dataset.role=role.role_name;
+        btn.dataset.rate=role.hourly_rate;
+        btn.innerHTML=`<span>🎭 ${role.role_name}</span><span style="color:#6dbf5a;font-weight:bold">$${parseFloat(role.hourly_rate).toFixed(2)}/hr</span>`;
+        btn.onclick=()=>{
+          btns.querySelectorAll('button').forEach(b=>{ b.style.borderColor='#3d5a20'; b.style.background='#1a2a10'; });
+          btn.style.borderColor='#6dbf5a'; btn.style.background='#1a3d10';
+          document.getElementById('logRole').value=role.role_name;
+          document.getElementById('logRoleRate').value=role.hourly_rate;
+          updateLogCalc();
+        };
+        btns.appendChild(btn);
+      });
+      btns.querySelector('button').click();
+    } else {
+      wrap.style.display='none';
+    }
+  }catch(e){ document.getElementById('logRoleWrap').style.display='none'; }
+
+  updateLogCalc();
+}
+
+function getLogDateTime(prefix){
+  const date=document.getElementById('logDate').value;
+  let hr=parseInt(document.getElementById(prefix+'Hr').value);
+  const min=document.getElementById(prefix+'Min').value;
+  const ampm=document.getElementById(prefix+'AmPm').value;
+  if(ampm==='AM'&&hr===12) hr=0;
+  if(ampm==='PM'&&hr!==12) hr+=12;
+  const localStr=`${date}T${String(hr).padStart(2,'0')}:${min}:00`;
+  const naive=new Date(localStr);
+  const now=new Date();
+  const utcMs=now.getTime();
+  const mtMs=new Date(now.toLocaleString('en-US',{timeZone:TZ})).getTime();
+  const offsetMs=utcMs-mtMs;
+  return new Date(naive.getTime()+offsetMs);
+}
+
+function updateLogCalc(){
+  const rate=parseFloat(document.getElementById('logRoleRate').value)||0;
+  const calc=document.getElementById('logCalc');
+  try{
+    const inDT=getLogDateTime('logIn');
+    const outDT=getLogDateTime('logOut');
+    if(isNaN(inDT)||isNaN(outDT)||outDT<=inDT){ calc.style.display='none'; return; }
+    const hours=(outDT-inDT)/3600000;
+    const pay=rate?` — $${(hours*rate).toFixed(2)} est. pay`:'';
+    document.getElementById('logCalcText').textContent=`${hours.toFixed(2)} hrs${pay}`;
+    calc.style.display='block';
+  }catch(e){ calc.style.display='none'; }
+}
+
+async function submitManualHours(){
+  const work_role=document.getElementById('logRole').value||null;
+  const role_rate=document.getElementById('logRoleRate').value||null;
+
+  let inDT, outDT;
+  try{
+    inDT=getLogDateTime('logIn');
+    outDT=getLogDateTime('logOut');
+  }catch(e){ msg('Please fill in all date and time fields','error'); return; }
+
+  if(isNaN(inDT)||isNaN(outDT)){ msg('Invalid date or time','error'); return; }
+  if(outDT<=inDT){ msg('Clock-out must be after clock-in','error'); return; }
+
+  const clock_in=inDT.toISOString();
+  const clock_out=outDT.toISOString();
+  const dateLabel=document.getElementById('logDate').options[document.getElementById('logDate').selectedIndex].text;
+
+  try{
+    const data = await callWebhook('manualHours', { employeeId: empId, clock_in, clock_out, work_role, role_rate: role_rate?parseFloat(role_rate):null });
+    if(data){
+      const roleLabel=work_role?` as ${work_role}`:'';
+      document.getElementById('logResult').textContent=`✅ ${data.hours} hrs logged${roleLabel} — ${dateLabel}`;
+      document.getElementById('logResult').style.display='block';
+      document.getElementById('logCalc').style.display='none';
+      msg(`✅ ${data.hours} hours logged successfully!`,'success');
+    } else {
+      msg('Error submitting hours','error');
+    }
+  }catch(e){ msg('Connection error','error'); }
+}
+
+async function loadStatus(){
+  if(!empId) return;
+  const today = new Date().toISOString().split('T')[0];
+  try{
+    const data = await callWebhook('status', { employeeId: empId, today });
+    const last = data.lastPunch;
+    const el=document.getElementById('statusVal');
+    if(!last || last.punch_type==='out'){
+      el.innerHTML='⏹️ Clocked Out'; el.style.color='#e07050';
+    } else {
+      el.innerHTML='✅ Clocked In'; el.style.color='#6dbf5a';
+    }
+    if(last){
+      const t=mtFormat(new Date(last.timestamp),{hour:'2-digit',minute:'2-digit',hour12:true});
+      document.getElementById('statusLast').innerHTML=`Last: ${last.punch_type.replace('_',' ')} at ${t}`;
+    } else {
+      document.getElementById('statusLast').innerHTML='';
+    }
+  }catch(e){}
+}
+
+async function loadTodayTips(){
+  if(!empId) return;
+  const today = new Date().toISOString().split('T')[0];
+  try{
+    const data = await callWebhook('getTipsToday', { employeeId: empId, today });
+    const total = data.total_tips || 0;
+    document.getElementById('tipsAmt').value = '';
+    document.getElementById('tipsTtl').innerHTML=`Today's Tips: $${total.toFixed(2)}`;
+  }catch(e){}
+}
+
+async function punch(type){
+  try{
+    const roles = await callWebhook('myRoles', { employeeId: empId });
+    if(roles && roles.length>0 && type==='in'){
+      pendingPunchType=type;
+      document.getElementById('roleSelectTitle').innerHTML=type==='in'?'Select Role — Clocking In':'Select Role — Clocking Out';
+      const container=document.getElementById('roleOptions');
+      container.innerHTML='';
+      roles.forEach(role=>{
+        const btn=document.createElement('button');
+        btn.style.cssText='width:100%;background:linear-gradient(135deg,#3d2a0a,#2a1f0e);border:2px solid #8b5e1a;color:#d4a847;padding:16px 18px;font-size:16px;border-radius:10px;cursor:pointer;text-align:left;display:flex;justify-content:space-between;align-items:center;';
+        btn.innerHTML=`<span>🎭 ${role.role_name}</span><span style="color:#6dbf5a;font-size:14px;font-weight:bold">$${parseFloat(role.hourly_rate).toFixed(2)}/hr</span>`;
+        btn.onclick=()=>{ closeModal('mRoleSelect'); doPunch(type, role.role_name, role.hourly_rate); };
+        container.appendChild(btn);
+      });
+      openModal('mRoleSelect');
+    } else {
+      doPunch(type, null, null);
+    }
+  }catch(e){ doPunch(type, null, null); }
+}
+
+async function doPunch(type, work_role, role_rate){
+  try{
+    const timestamp = new Date().toISOString();
+    await callWebhook('punch', { employeeId: empId, timestamp, punch_type: type, work_role, role_rate });
+    const roleLabel=work_role?` as ${work_role}`:'';
+    const rateLabel=role_rate?` @ $${parseFloat(role_rate).toFixed(2)}/hr`:'';
+    msg(type==='in'?`✅ Clocked in${roleLabel}${rateLabel}! 🌲`:`👋 Clocked out${roleLabel}! See ya!`,'success');
+    loadStatus();
+  }catch(e){ msg('Connection error','error'); }
+}
+
+async function saveTips(){
+  const total=parseFloat(document.getElementById('tipsAmt').value)||0;
+  const today = new Date().toISOString().split('T')[0];
+  try{
+    await callWebhook('tip', { employeeId: empId, date: today, total_tips: total });
+    msg(`Tips saved! $${total.toFixed(2)} 💰`,'success');
+    loadTodayTips();
+  }catch(e){ msg('Error saving tips','error'); }
+}
+
+function doLogout(){
+  clearInterval(refreshT);
+  empId=null; empRole=''; PIN=''; dots();
+  showScreen('sPin');
+}
+
+// ════════════════════════════════════
+// ADMIN NAVIGATION
+// ════════════════════════════════════
+function aNav(panel){
+  document.querySelectorAll('.anav').forEach(el=>el.classList.remove('on'));
+  const navEl=document.getElementById('AN-'+panel);
+  if(navEl) navEl.classList.add('on');
+  document.querySelectorAll('.apanel').forEach(el=>el.classList.remove('on'));
+  const panelEl=document.getElementById('AP-'+panel);
+  if(panelEl) panelEl.classList.add('on');
+  if(panel==='dash') loadDash();
+  if(panel==='allemps') loadAllEmps();
+  if(panel==='tax'){ document.getElementById('taxYr').value=new Date().getFullYear(); loadTax(); }
+  if(panel==='profile'&&profileId) loadProf();
+  if(panel==='backup') loadBackupLog();
+}
+
+function goAdminLogin(){
+  showScreen('sPin');
+  msg('Enter Manager PIN (1234)','success');
+}
+
+// ════════════════════════════════════
+// DASHBOARD
+// ════════════════════════════════════
+function rng(r){
+  const today=new Date();
+  let start=new Date(today);
+  if(r==='week') start.setDate(today.getDate()-today.getDay());
+  else if(r==='2weeks') start.setDate(today.getDate()-13);
+  else if(r==='month') start=new Date(today.getFullYear(),today.getMonth(),1);
+  else if(r==='6months') start=new Date(today.getFullYear(),today.getMonth()-5,1);
+  else if(r==='year') start=new Date(today.getFullYear(),0,1);
+  document.getElementById('dS').value=fmt(start);
+  document.getElementById('dE').value=fmt(today);
+  loadDash();
+}
+
+async function loadDash(){
+  const s=document.getElementById('dS').value, e=document.getElementById('dE').value;
+  if(!s||!e) return;
+  document.getElementById('dashContent').innerHTML='<div style="text-align:center;padding:40px;color:var(--fog)"><span class="loading-spinner"></span> Loading...</div>';
+  try{
+    const punches = await callWebhook('getPunches', { start: s, end: e });
+    const tips = await callWebhook('getTips', { start: s, end: e });
+    renderDash(punches||[], tips||[]);
+  }catch(e){ 
+    document.getElementById('dashContent').innerHTML='<p style="color:#e07050;text-align:center;padding:20px">Error loading data</p>';
+  }
+}
+
+function renderDash(punches,tips){
+  const emps={};
+  punches.forEach(p=>{
+    if(!emps[p.employee_name]) emps[p.employee_name]={punches:[],tips:0,rate:p.hourly_rate,eid:p.employee_id};
+    emps[p.employee_name].punches.push(p);
+  });
+  tips.forEach(t=>{ if(emps[t.employee_name]) emps[t.employee_name].tips+=(t.total_tips||0); });
+  if(!Object.keys(emps).length){
+    document.getElementById('dashContent').innerHTML='<p style="color:#6b4c1e;text-align:center;padding:20px">No data for this period.</p>';
+    return;
+  }
+  let grandH=0,grandP=0,grandT=0,html='';
+  Object.entries(emps).sort(([a],[b])=>a.localeCompare(b)).forEach(([name,d])=>{
+    const h=calcH(d.punches), pay=h*d.rate;
+    grandH+=h; grandP+=pay; grandT+=d.tips;
+    html+=`<div class="ecard">
+      <div class="ecard-name" onclick="openProf(${d.eid},'${name.replace(/'/g,"\\'")}')">🌲 ${name}</div>
+      <div class="stats3">
+        <div class="sbox"><div class="slbl">Hours</div><div class="sval">${h.toFixed(2)}</div></div>
+        <div class="sbox"><div class="slbl">Gross Pay</div><div class="sval">$${pay.toFixed(2)}</div></div>
+        <div class="sbox"><div class="slbl">Tips</div><div class="sval">$${d.tips.toFixed(2)}</div></div>
+      </div>
+      <div class="card-acts">
+        <button class="ab ab-blue" onclick="openProf(${d.eid},'${name.replace(/'/g,"\\'")}')">👤 View Profile</button>
+        <button class="ab ab-amber" onclick="openManage(${d.eid},'${name.replace(/'/g,"\\'")}',${d.rate})">⚙️ Manage Employee</button>
+      </div>
+    </div>`;
+  });
+  html+=`<div class="grand">
+    <div><div class="gv">${grandH.toFixed(2)}</div><div class="gl">Total Hours</div></div>
+    <div><div class="gv">$${grandP.toFixed(2)}</div><div class="gl">Gross Pay</div></div>
+    <div><div class="gv">$${grandT.toFixed(2)}</div><div class="gl">Total Tips</div></div>
+  </div>`;
+  document.getElementById('dashContent').innerHTML=html;
+}
+
+// ════════════════════════════════════
+// ALL EMPLOYEES TAB
+// ════════════════════════════════════
+async function loadAllEmps(){
+  document.getElementById('allEmpsContent').innerHTML='<div style="text-align:center;padding:40px;color:var(--fog)"><span class="loading-spinner"></span> Loading...</div>';
+  try{
+    const employees = await callWebhook('employees');
+    renderAllEmps(employees||[]);
+  }catch(e){ document.getElementById('allEmpsContent').innerHTML='<p style="color:#e07050;text-align:center;padding:20px">Error loading employees</p>'; }
+}
+
+function renderAllEmps(employees){
+  const container=document.getElementById('allEmpsContent');
+  if(!employees.length){ container.innerHTML='<p style="color:#6b4c1e;text-align:center;padding:20px">No employees found.</p>'; return; }
+  const active=employees.filter(e=>e.role!=='admin'&&e.active!=0);
+  const inactive=employees.filter(e=>e.role!=='admin'&&e.active==0);
+  let html='';
+  const empCard=(emp)=>{
+    const statusBadge=emp.active!=0
+      ?'<span style="background:rgba(26,61,16,.8);color:#6dbf5a;border:1px solid rgba(74,154,56,.4);padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;letter-spacing:.5px">ACTIVE</span>'
+      :'<span style="background:rgba(61,26,10,.8);color:#e07050;border:1px solid rgba(176,74,48,.4);padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;letter-spacing:.5px">INACTIVE</span>';
+    return `<div class="ecard">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;padding-left:12px">
+        <div class="ecard-name" style="margin-bottom:0;padding-left:0" onclick="openProf(${emp.id},'${emp.name.replace(/'/g,"\\'")}')">🌲 ${emp.name}</div>
+        ${statusBadge}
+      </div>
+      <div style="padding-left:12px;margin-bottom:10px;color:var(--smoke);font-size:11px;display:flex;gap:16px">
+        <span>💵 $${parseFloat(emp.hourly_rate||15).toFixed(2)}/hr</span>
+        <span>📅 ${(emp.pay_period||'weekly').charAt(0).toUpperCase()+(emp.pay_period||'weekly').slice(1)}</span>
+      </div>
+      <div class="card-acts">
+        <button class="ab ab-blue" onclick="openProf(${emp.id},'${emp.name.replace(/'/g,"\\'")}')">👤 Profile</button>
+        <button class="ab ab-amber" onclick="openManage(${emp.id},'${emp.name.replace(/'/g,"\\'")}',${emp.hourly_rate||15})">⚙️ Manage</button>
+        <button class="ab ab-dark" onclick="openRoles(${emp.id},'${emp.name.replace(/'/g,"\\'")}')">🎭 Roles</button>
+      </div>
+    </div>`;
+  };
+  if(active.length){
+    html+=`<div style="color:var(--fog);font-size:10px;text-transform:uppercase;letter-spacing:2px;font-weight:700;margin-bottom:10px;padding-left:4px">Active (${active.length})</div>`;
+    active.forEach(emp=>{ html+=empCard(emp); });
+  }
+  if(inactive.length){
+    html+=`<div style="color:var(--smoke);font-size:10px;text-transform:uppercase;letter-spacing:2px;font-weight:700;margin:18px 0 10px;padding-left:4px">Inactive (${inactive.length})</div>`;
+    inactive.forEach(emp=>{ html+=empCard(emp); });
+  }
+  container.innerHTML=html;
+}
+
+// ════════════════════════════════════
+// MANAGE EMPLOYEE
+// ════════════════════════════════════
+function openManage(id,name,rate){
+  document.getElementById('mngId').value=id;
+  document.getElementById('mngTitle').innerHTML=`Manage: ${name}`;
+  document.getElementById('mngName').value=name;
+  document.getElementById('mngRate').value=rate;
+  document.getElementById('mngPin').value='';
+  get(`/api/admin/employee/${id}`).then(d=>{
+    if(d.success){
+      document.getElementById('mngPay').value=d.employee.pay_period||'weekly';
+      document.getElementById('mngActive').value=d.employee.active;
+    }
+  }).catch(()=>{});
+  openModal('mManage');
+}
+
+async function saveManage(){
+  const id=document.getElementById('mngId').value;
+  const body={name:document.getElementById('mngName').value, hourly_rate:document.getElementById('mngRate').value, pay_period:document.getElementById('mngPay').value, active:document.getElementById('mngActive').value};
+  const p=document.getElementById('mngPin').value;
+  if(p) body.pin=p;
+  try{
+    await callWebhook('updateEmployee', { id, ...body });
+    msg('Employee updated ✅','success');
+    closeModal('mManage');
+    loadDash();
+    loadAllEmps();
+  }catch(e){ msg('Connection error','error'); }
+}
+
+// ════════════════════════════════════
+// ADD EMPLOYEE
+// ════════════════════════════════════
+async function addEmp(){
+  const name=document.getElementById('nName').value.trim();
+  const pin=document.getElementById('nPin').value.trim();
+  const rate=document.getElementById('nRate').value;
+  if(!name||!pin||pin.length!==4||!rate){ msg('All fields required — PIN must be 4 digits','error'); return; }
+  try{
+    await callWebhook('addEmployee', { name, pin, hourly_rate: parseFloat(rate), role: 'employee' });
+    msg(`${name} added! ✅`,'success');
+    closeModal('mAddEmp');
+    ['nName','nPin','nRate'].forEach(i=>document.getElementById(i).value='');
+    loadDash();
+    loadAllEmps();
+  }catch(e){ msg('Error adding employee','error'); }
+}
+
+// ════════════════════════════════════
+// EMPLOYEE PROFILE
+// ════════════════════════════════════
+function openProf(id,name){
+  profileId=id; profName=name;
+  document.getElementById('profTitle').innerHTML=`👤 ${name}`;
+  document.getElementById('AN-profile').style.display='';
+  prng('week');
+  aNav('profile');
+}
+
+function prng(r){
+  const today=new Date();
+  let start=new Date(today);
+  if(r==='week') start.setDate(today.getDate()-today.getDay());
+  else if(r==='month') start=new Date(today.getFullYear(),today.getMonth(),1);
+  else if(r==='6months') start=new Date(today.getFullYear(),today.getMonth()-5,1);
+  else if(r==='year') start=new Date(today.getFullYear(),0,1);
+  document.getElementById('pS').value=fmt(start);
+  document.getElementById('pE').value=fmt(today);
+  loadProf();
+}
+
+async function loadProf(){
+  if(!profileId) return;
+  const s=document.getElementById('pS').value, e=document.getElementById('pE').value;
+  if(!s||!e) return;
+  document.getElementById('profContent').innerHTML='<div style="text-align:center;padding:40px;color:var(--fog)"><span class="loading-spinner"></span> Loading profile...</div>';
+  try{
+    const emp = (await callWebhook('employees')).find(e => e.id == profileId);
+    if(!emp) throw new Error('Employee not found');
+    const punches = await callWebhook('getEmployeePunches', { employeeId: profileId, start: s, end: e });
+    const tips = await callWebhook('getEmployeeTips', { employeeId: profileId, start: s, end: e });
+    const hours = calcH(punches);
+    const gross = hours * emp.hourly_rate;
+    const totalTips = tips.reduce((s,t)=>s+(t.total_tips||0),0);
+    let html=`
+      <div class="prof-banner">
+        <div class="prof-name">🌲 ${emp.name}</div>
+        <div class="prof-meta">$${emp.hourly_rate}/hr &nbsp;·&nbsp; ${emp.active?'✅ Active':'❌ Inactive'}</div>
+      </div>
+      <div class="prof-stats">
+        <div class="pstat"><div class="pv">${hours.toFixed(2)}</div><div class="pl">Hours</div></div>
+        <div class="pstat"><div class="pv">$${gross.toFixed(2)}</div><div class="pl">Gross Pay</div></div>
+        <div class="pstat"><div class="pv">$${totalTips.toFixed(2)}</div><div class="pl">Tips</div></div>
+      </div>
+      <div class="sect"><h3>Punch Log (${punches.length} entries)</h3>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:8px;gap:6px">
+        <button class="ab ab-green" onclick="openAddPunch(${emp.id},'${emp.name.replace(/'/g,"\\'")}')">➕ Add Punch</button>
+      </div>`;
+    if(!punches.length) html+='<p>No punches for this period.</p>';
+    else{
+      const byDay={};
+      punches.forEach(p=>{ const day=p.timestamp.split('T')[0]; if(!byDay[day]) byDay[day]=[]; byDay[day].push(p); });
+      html+=`<table class="ptable"><thead><tr><th>Date</th><th>Time</th><th>Type</th><th>Role</th><th>Rate</th><th></th></tr></thead><tbody>`;
+      Object.entries(byDay).sort().forEach(([day,ps])=>{
+        ps.forEach(p=>{
+          const dt=new Date(p.timestamp);
+          const tc=p.punch_type==='in'?'tin':'tout';
+          const tl=p.punch_type.replace('_',' ').replace(/\b\w/g,c=>c.toUpperCase());
+          const localDT=toLocalDT(p.timestamp);
+          const rateDisplay=p.role_rate!=null?`$${parseFloat(p.role_rate).toFixed(2)}`:'base';
+          html+=`<tr><td>${mtFormat(dt,{month:'numeric',day:'numeric',year:'numeric'})}</td>
+                  <td>${mtFormat(dt,{hour:'2-digit',minute:'2-digit',hour12:true})}</td>
+                  <td class="${tc}">${tl}</td>
+                  <td style="color:#9c7a3c">${p.work_role||'—'}</td>
+                  <td>${p.punch_type==='in'?rateDisplay:'—'}</td>
+                  <td><button class="ab ab-dark" style="padding:4px 8px;font-size:11px" onclick="openEditPunch(${p.id},'${p.punch_type}','${localDT}','${(p.work_role||'').replace(/'/g,"\\'")}')">✏️</button></td></tr>`;
+        });
+      });
+      html+=`</tbody></table>`;
+    }
+    html+=`</div><div class="sect"><h3>Tips Log (${tips.length} entries)</h3>`;
+    if(!tips.length) html+='<p>No tips for this period.</p>';
+    else{
+      html+=`<table class="ptable"><thead><tr><th>Date</th><th>Tips</th></tr></thead><tbody>`;
+      tips.forEach(t=>{ html+=`<tr><td>${t.date}</td><td style="color:#d4a847;font-weight:bold">$${(t.total_tips||0).toFixed(2)}</td></tr>`; });
+      html+=`</tbody></table>`;
+    }
+    html+=`</div><div style="margin-top:4px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="ab ab-amber" onclick="openManage(${emp.id},'${emp.name.replace(/'/g,"\\'")}',${emp.hourly_rate})">⚙️ Manage Employee</button>
+      <button class="ab ab-blue" onclick="openRoles(${emp.id},'${emp.name.replace(/'/g,"\\'")}')">🎭 Manage Roles</button>
+    </div>`;
+    document.getElementById('profContent').innerHTML=html;
+  }catch(e){ document.getElementById('profContent').innerHTML='<p style="color:#e07050;text-align:center;padding:20px">Error loading profile</p>'; }
+}
+
+function printProf(){
+  const s=document.getElementById('pS').value, e=document.getElementById('pE').value;
+  const content=document.getElementById('profContent').innerHTML;
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><title>Employee Profile</title>
+  <style>body{font-family:Georgia,serif;padding:30px;color:#2a1f0e;}h1,h2,h3{color:#8b5e1a;}table{width:100%;border-collapse:collapse;}th{background:#3d2a0a;color:#d4a847;padding:8px;text-align:left;font-size:11px;}td{padding:7px 8px;border-bottom:1px solid #ddd;font-size:13px;}.tin{color:green;}.tout{color:red;}button{display:none!important;}div[style*="margin-top"]{display:none!important;}</style>
+  </head><body><h1>🌲 Woods Landing — ${profName}</h1>
+  <p style="color:#888;font-size:13px">Period: ${s} to ${e} · Generated: ${mtFormat(new Date(),{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true})}</p><br>
+  ${content}</body></html>`);
+  w.document.close(); setTimeout(()=>w.print(),500);
+}
+
+// ════════════════════════════════════
+// TAX INFO
+// ════════════════════════════════════
+async function loadTax(){
+  const y=document.getElementById('taxYr').value||new Date().getFullYear();
+  document.getElementById('taxContent').innerHTML='<div style="text-align:center;padding:40px;color:var(--fog)"><span class="loading-spinner"></span> Loading...</div>';
+  try{
+    const data = await callWebhook('taxReport', { year: y });
+    if(!data || !data.employees.length){ document.getElementById('taxContent').innerHTML='<p style="color:#6b4c1e;text-align:center;padding:20px">No data for '+y+'</p>'; return; }
+    let gh=0,gg=0,gt=0,ge=0;
+    data.employees.forEach(e=>{ gh+=parseFloat(e.total_hours); gg+=parseFloat(e.total_gross); gt+=parseFloat(e.total_tips); ge+=parseFloat(e.total_earnings); });
+    let html=`<div class="year-grand">
+      <div><div class="yv">${gh.toFixed(2)}</div><div class="yl">Total Hours</div></div>
+      <div><div class="yv">$${gg.toFixed(2)}</div><div class="yl">Gross Pay</div></div>
+      <div><div class="yv">$${gt.toFixed(2)}</div><div class="yl">Tips</div></div>
+      <div><div class="yv">$${ge.toFixed(2)}</div><div class="yl">Total Earnings</div></div>
+    </div>`;
+    data.employees.forEach(emp=>{
+      html+=`<div class="tax-card">
+        <div class="tax-hdr" onclick="toggleMonth('tm-${emp.id}')">
+          <div class="tax-empname">🌲 ${emp.name}</div>
+          <div class="tax-summary">
+            <div>${emp.total_hours}h &nbsp;·&nbsp; Gross: <span>$${emp.total_gross}</span> &nbsp;·&nbsp; Tips: <span>$${emp.total_tips}</span> &nbsp;·&nbsp; Total: <span>$${emp.total_earnings}</span></div>
+          </div>
+        </div>
+        <div class="tax-months" id="tm-${emp.id}"><div class="mthgrid">`;
+      for(let m=1;m<=12;m++){
+        const md=emp.monthly[m];
+        html+=`<div class="mbox"><div class="mn">${MONTHS[m-1]}</div>
+          <div class="mv">${md.hours}h</div><div class="ml">Hours</div>
+          <div class="mv" style="margin-top:4px">$${md.gross}</div><div class="ml">Gross</div>
+          <div class="mv" style="margin-top:4px">$${md.tips}</div><div class="ml">Tips</div>
+        </div>`;
+      }
+      html+=`</div></div></div>`;
+    });
+    document.getElementById('taxContent').innerHTML=html;
+  }catch(e){ document.getElementById('taxContent').innerHTML='<p style="color:#e07050;text-align:center;padding:20px">Error loading tax data</p>'; }
+}
+
+function toggleMonth(id){ document.getElementById(id).classList.toggle('open'); }
+
+function printTax(){
+  const y=document.getElementById('taxYr').value||new Date().getFullYear();
+  const content=document.getElementById('taxContent').innerHTML;
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><title>Tax Report ${y}</title>
+  <style>body{font-family:Georgia,serif;padding:30px;color:#2a1f0e;}h1{color:#8b5e1a;}.tax-card{border:1px solid #ddd;border-radius:6px;margin-bottom:14px;overflow:hidden;}.tax-hdr{padding:13px;background:#f5f0e8;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;}.tax-empname{font-weight:bold;color:#5a3a0a;font-size:15px;}.tax-summary{color:#666;font-size:12px;}.tax-summary span{color:#333;font-weight:bold;}.tax-months{display:block!important;padding:10px 13px;}.mthgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;}.mbox{background:#faf7f2;border:1px solid #e0d5c0;border-radius:4px;padding:8px;}.mn{font-size:9px;color:#999;text-transform:uppercase;}.mv{font-size:13px;font-weight:bold;color:#333;}.ml{font-size:9px;color:#999;}.year-grand{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;background:#3d2a0a;color:#d4a847;padding:15px;border-radius:8px;margin-bottom:16px;text-align:center;}.yv{font-size:20px;font-weight:bold;}.yl{font-size:11px;opacity:.75;}</style>
+  </head><body><h1>🌲 Woods Landing Tax Report — ${y}</h1>
+  <p style="color:#888;font-size:13px">Generated: ${mtFormat(new Date(),{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true})}</p><br>
+  ${content}</body></html>`);
+  w.document.close(); setTimeout(()=>w.print(),500);
+}
+
+// ════════════════════════════════════
+// BACKUP PAGE (simplified, just JSON download)
+// ════════════════════════════════════
+async function resetData(keepEmployees){
+  const what=keepEmployees?'all punches, tips, and backup logs (employees & roles kept)':'EVERYTHING including all employees and roles';
+  if(!confirm(`⚠️ This will permanently delete ${what}.\n\nType OK to confirm.`)) return;
+  if(!confirm('Are you absolutely sure? This cannot be undone.')) return;
+  try{
+    await callWebhook('resetData', { keep_employees: keepEmployees });
+    msg('Data cleared ✅','success');
+    loadBackupLog();
+  }catch(e){ msg('Error: '+e.message,'error'); }
+}
+
+async function loadBackupLog(){
+  try{
+    const d=await callWebhook('getBackupLog');
+    const container=document.getElementById('backupLog');
+    if(!d || !d.length){ container.innerHTML='No backups yet.'; return; }
+    let html='';
+    d.forEach(b=>{
+      const dt=mtFormat(new Date(b.backup_date),{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true});
+      html+=`<div style="padding:6px 0;border-bottom:1px solid #2a1f0e;display:flex;justify-content:space-between"><span style="color:#9c7a3c">${dt}</span><span style="color:#6dbf5a">${b.type}</span><span style="color:#6b4c1e">${b.stats}</span></div>`;
+    });
+    container.innerHTML=html;
+  }catch(e){ document.getElementById('backupLog').innerHTML='Error loading logs.'; }
+}
+
+async function doManualBackup(){
+  try{
+    const data = await callWebhook('fullBackup');
+    const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `woods-landing-backup-${fmt(new Date())}.json`;
+    a.click(); URL.revokeObjectURL(url);
+    msg('Backup downloaded','success');
+  }catch(e){ msg('Backup failed: '+e.message,'error'); }
+}
+
+async function downloadCSV(){
+  msg('CSV export not implemented in front‑end only mode. Use Google Sheets directly.','error');
+}
+
+async function triggerDriveBackup(){
+  msg('Google Drive backup not configured in this front‑end version.','error');
+}
+
+async function sendBackupEmail(){
+  msg('Email backup not configured in front‑end only mode.','error');
+}
+
+async function emailReport(){
+  msg('Email report not configured. Use Google Sheets directly.','error');
+}
+
+async function printReport(){
+  window.open('https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit', '_blank');
+}
+
+function openTxtWin(text){
+  const w=window.open('','_blank');
+  w.document.write('<pre style="font-family:monospace;padding:20px;font-size:13px">'+text+'</pre>');
+  w.document.title='Woods Landing Report'; w.print();
+}
+
+// ════════════════════════════════════
+// ADMIN: PUNCH EDITING (simplified)
+// ════════════════════════════════════
+function toLocalDT(isoStr){
+  const d = new Date(isoStr);
+  const pad=n=>String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function openEditPunch(id, type, localDT, work_role){
+  document.getElementById('epId').value=id;
+  document.getElementById('epType').value=type;
+  document.getElementById('epTime').value=localDT;
+  document.getElementById('epRole').value=work_role||'';
+  openModal('mEditPunch');
+}
+
+async function saveEditPunch(){
+  const id=document.getElementById('epId').value;
+  const punch_type=document.getElementById('epType').value;
+  const localDT=document.getElementById('epTime').value;
+  const work_role=document.getElementById('epRole').value.trim();
+  if(!localDT){ msg('Date/time required','error'); return; }
+  const ts=new Date(localDT).toISOString();
+  try{
+    await callWebhook('updatePunch', { id, timestamp: ts, punch_type, work_role });
+    msg('Punch updated ✅','success');
+    closeModal('mEditPunch');
+    loadProf();
+  }catch(e){ msg('Error saving','error'); }
+}
+
+async function deletePunch(){
+  if(!confirm('Delete this punch? This cannot be undone.')) return;
+  const id=document.getElementById('epId').value;
+  try{
+    await callWebhook('deletePunch', { id });
+    msg('Punch deleted','success');
+    closeModal('mEditPunch');
+    loadProf();
+  }catch(e){ msg('Error','error'); }
+}
+
+function openAddPunch(empId, empName){
+  document.getElementById('apEmpId').value=empId;
+  document.getElementById('addPunchTitle').innerHTML=`Add Punch — ${empName}`;
+  document.getElementById('apType').value='in';
+  document.getElementById('apTime').value=toLocalDT(new Date().toISOString());
+  document.getElementById('apRole').value='';
+  openModal('mAddPunch');
+}
+
+async function saveAddPunch(){
+  const employee_id=document.getElementById('apEmpId').value;
+  const punch_type=document.getElementById('apType').value;
+  const localDT=document.getElementById('apTime').value;
+  const work_role=document.getElementById('apRole').value.trim();
+  if(!localDT){ msg('Date/time required','error'); return; }
+  const ts=new Date(localDT).toISOString();
+  try{
+    await callWebhook('addPunch', { employee_id, punch_type, timestamp: ts, work_role });
+    msg('Punch added ✅','success');
+    closeModal('mAddPunch');
+    loadProf();
+  }catch(e){ msg('Error adding punch','error'); }
+}
+
+// ════════════════════════════════════
+// ADMIN: MANAGE ROLES (simplified)
+// ════════════════════════════════════
+async function openRoles(empId, empName){
+  document.getElementById('rolesEmpId').value=empId;
+  document.getElementById('rolesTitle').innerHTML=`🎭 Roles — ${empName}`;
+  document.getElementById('newRoleName').value='';
+  document.getElementById('newRoleRate').value='';
+  await loadRolesList(empId);
+  openModal('mRoles');
+}
+
+async function loadRolesList(empId){
+  try{
+    const roles = await callWebhook('getEmployeeRoles', { employeeId: empId });
+    const container=document.getElementById('rolesList');
+    if(!roles || !roles.length){
+      container.innerHTML='<p style="color:#6b4c1e;font-size:13px;margin-bottom:10px">No roles assigned yet. Add one below.</p>';
+      return;
+    }
+    let html='';
+    roles.forEach(r=>{
+      html+=`<div style="display:grid;grid-template-columns:1fr auto auto auto;gap:6px;align-items:center;padding:8px 10px;background:#1a1208;border-radius:7px;margin-bottom:7px;border:1px solid #3d2a0a">
+        <span style="color:#d4a847;font-size:14px">🎭 ${r.role_name}</span>
+        <span style="color:#6dbf5a;font-size:13px;font-weight:bold;white-space:nowrap">$${parseFloat(r.hourly_rate||15).toFixed(2)}/hr</span>
+        <button class="ab ab-dark" style="padding:4px 9px;font-size:11px" onclick="editRole(${r.id},'${r.role_name.replace(/'/g,"\\'")}',${r.hourly_rate||15})">✏️ Edit</button>
+        <button class="ab ab-red" style="padding:4px 9px;font-size:11px" onclick="removeRole(${r.id})">Remove</button>
+      </div>`;
+    });
+    container.innerHTML=html;
+  }catch(e){ document.getElementById('rolesList').innerHTML='<p style="color:#e07050">Error loading roles</p>'; }
+}
+
+function editRole(roleId, roleName, roleRate){
+  const newName=prompt(`Role name:`, roleName);
+  if(newName===null) return;
+  const newRate=prompt(`Hourly rate for "${newName||roleName}":`, roleRate);
+  if(newRate===null) return;
+  const empId=document.getElementById('rolesEmpId').value;
+  callWebhook('updateRole', { roleId, role_name: newName||roleName, hourly_rate: parseFloat(newRate)||roleRate })
+    .then(()=>loadRolesList(empId))
+    .catch(()=>msg('Error updating role','error'));
+}
+
+async function addRole(){
+  const empId=document.getElementById('rolesEmpId').value;
+  const name=document.getElementById('newRoleName').value.trim();
+  const rate=parseFloat(document.getElementById('newRoleRate').value)||15.00;
+  if(!name){ msg('Enter a role name','error'); return; }
+  try{
+    await callWebhook('addEmployeeRole', { employeeId: empId, role_name: name, hourly_rate: rate });
+    document.getElementById('newRoleName').value='';
+    document.getElementById('newRoleRate').value='';
+    loadRolesList(empId);
+    msg(`Role "${name}" added ✅`,'success');
+  }catch(e){ msg('Error','error'); }
+}
+
+async function removeRole(roleId){
+  if(!confirm('Remove this role?')) return;
+  try{
+    await callWebhook('removeEmployeeRole', { roleId });
+    loadRolesList(document.getElementById('rolesEmpId').value);
+    msg('Role removed ✅','success');
+  }catch(e){ msg('Error','error'); }
+}
+
+// ════════════════════════════════════
+// UTILS
+// ════════════════════════════════════
+function calcH(punches){
+  let mins=
